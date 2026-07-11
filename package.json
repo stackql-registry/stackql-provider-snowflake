@@ -1,0 +1,35 @@
+{
+  "name": "stackql-provider-snowflake",
+  "version": "0.1.0",
+  "description": "StackQL Provider for Snowflake",
+  "type": "module",
+  "scripts": {
+    "pre-process": "node ./provider-dev/scripts/pre_process.mjs",
+    "build-inventory": "node ./provider-dev/scripts/build_inventory.mjs",
+    "split": "node ./bin/split.mjs",
+    "generate-mappings": "node ./bin/generate-mappings.mjs",
+    "map-operations": "node ./provider-dev/scripts/map_operations.mjs",
+    "normalize": "node ./bin/normalize.mjs",
+    "generate-provider": "node ./bin/generate-provider.mjs",
+    "generate-docs": "node ./bin/generate-docs.mjs",
+    "start-server": "bash ./bin/start-server.sh",
+    "stop-server": "bash ./bin/stop-server.sh",
+    "server-status": "bash ./bin/server-status.sh",
+    "test-meta-routes": "node ./bin/test-meta-routes.cjs",
+    "test-integration": "node ./tests/integration/run_integration_tests.mjs"
+  },
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
+    "@stackql/pgwire-lite": "^1.0.1",
+    "@stackql/provider-utils": "^0.7.6",
+    "js-yaml": "^5.2.1"
+  },
+  "keywords": [
+    "stackql",
+    "snowflake",
+    "provider"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
