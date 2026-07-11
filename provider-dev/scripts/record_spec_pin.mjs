@@ -46,6 +46,16 @@ export function recordSpecPin() {
     recorded_at: new Date().toISOString()
   };
 
+  // keep re-runs idempotent: only refresh recorded_at when the pin changed
+  if (fs.existsSync(pinPath)) {
+    const existing = JSON.parse(fs.readFileSync(pinPath, 'utf8'));
+    const { recorded_at: a, ...existingRest } = existing;
+    const { recorded_at: b, ...pinRest } = pin;
+    if (JSON.stringify(existingRest) === JSON.stringify(pinRest)) {
+      return existing;
+    }
+  }
+
   fs.mkdirSync(path.dirname(pinPath), { recursive: true });
   fs.writeFileSync(pinPath, JSON.stringify(pin, null, 2) + '\n', 'utf8');
   return pin;
