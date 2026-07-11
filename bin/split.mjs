@@ -95,10 +95,72 @@ for (const [service, members] of [...groups.entries()].sort()) {
     components: {}
   };
 
-  for (const { file, doc: member } of members) {
-    if (member.openapi !== doc.openapi) {
+  for (const { file, doc: memberOrig } of members) {
+    const member = structuredClone(memberOrig);
+    const memberKey = file.replace(/\.ya?ml$/, '').replace(/-/g, '_');
+    // 3.0.x patch versions are compatible - require matching major.minor and
+    // carry the highest patch version seen
+    const minor = (v) => String(v).split('.').slice(0, 2).join('.');
+    if (minor(member.openapi) !== minor(doc.openapi)) {
       errors.push(`${service}: openapi version mismatch in ${file} (${member.openapi} vs ${doc.openapi})`);
+    } else if (String(member.openapi) > String(doc.openapi)) {
+      doc.openapi = member.openapi;
     }
+
+    // components whose key already exists with different content are renamed
+    // deterministically to `<name>_<member>` and the member's refs rewritten -
+    // identical content (the shared components injected at pre-process)
+    // merges silently
+    const renames = new Map(); // `${section}/${name}` -> newName
+    for (const [section, entries] of Object.entries(member.components || {})) {
+      if (!doc.components[section]) continue;
+      for (const [name, value] of Object.entries(entries)) {
+        if (name in doc.components[section] && !deepEqual(doc.components[section][name], value)) {
+          const newName = `${name}_${memberKey}`;
+          if (doc.components[section][newName]) {
+            errors.push(`${service}: rename collision on components.${section}.${newName} (from ${file})`);
+            continue;
+          }
+          renames.set(`${section}/${name}`, newName);
+          if (verbose) console.log(`  ${service}: components.${section}.${name} (${file}) -> ${newName}`);
+        }
+      }
+    }
+    if (renames.size > 0) {
+      const rewrite = (node) => {
+        if (Array.isArray(node)) {
+          for (const item of node) rewrite(item);
+          return;
+        }
+        if (!node || typeof node !== 'object') return;
+        if (typeof node.$ref === 'string') {
+          const m = node.$ref.match(/^#\/components\/([^/]+)\/(.+)$/);
+          if (m && renames.has(`${m[1]}/${m[2]}`)) {
+            node.$ref = `#/components/${m[1]}/${renames.get(`${m[1]}/${m[2]}`)}`;
+          }
+        }
+        // security requirement lists reference securitySchemes by key
+        if (Array.isArray(node.security)) {
+          for (const req of node.security) {
+            for (const schemeName of Object.keys(req)) {
+              const newName = renames.get(`securitySchemes/${schemeName}`);
+              if (newName) {
+                req[newName] = req[schemeName];
+                delete req[schemeName];
+              }
+            }
+          }
+        }
+        for (const value of Object.values(node)) rewrite(value);
+      };
+      rewrite(member);
+      for (const [key, newName] of renames) {
+        const [section, name] = key.split('/');
+        member.components[section][newName] = member.components[section][name];
+        delete member.components[section][name];
+      }
+    }
+
     for (const [p, item] of Object.entries(member.paths || {})) {
       if (p in doc.paths) {
         errors.push(`${service}: duplicate path ${p} (from ${file})`);
@@ -109,11 +171,7 @@ for (const [service, members] of [...groups.entries()].sort()) {
     for (const [section, entries] of Object.entries(member.components || {})) {
       if (!doc.components[section]) doc.components[section] = {};
       for (const [name, value] of Object.entries(entries)) {
-        if (name in doc.components[section]) {
-          if (!deepEqual(doc.components[section][name], value)) {
-            errors.push(`${service}: conflicting components.${section}.${name} between members (from ${file})`);
-          }
-        } else {
+        if (!(name in doc.components[section])) {
           doc.components[section][name] = value;
         }
       }
@@ -142,9 +200,15 @@ if (outputDir !== inputDir) {
   }
   for (const f of existing) fs.rmSync(path.join(outputDir, f));
 } else {
-  // in-place regroup: remove the consumed member specs
+  // in-place regroup: remove the consumed member specs and the excluded specs
   for (const members of groups.values()) {
     for (const { file } of members) fs.rmSync(path.join(inputDir, file));
+  }
+  for (const file of specFiles) {
+    const key = file.replace(/\.ya?ml$/, '');
+    if (excluded && key in excluded && fs.existsSync(path.join(inputDir, file))) {
+      fs.rmSync(path.join(inputDir, file));
+    }
   }
 }
 
