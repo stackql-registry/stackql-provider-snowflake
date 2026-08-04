@@ -56,7 +56,7 @@ SELECT name, owner FROM snowflake.databases.databases WHERE endpoint = 'MYORG-MY
 | CancelStatement | `DELETE` | `sqlapi.statements.cancel_statement` |
 | SSE-only responses (cortex `fast-generation`, `inference:complete`), Spark Connect | skipped | streaming and protobuf protocols are out of scope |
 
-Statement submission maps to `INSERT ... RETURNING` deliberately: submitting a statement is a mutation (it runs work on a warehouse and mints a statement handle), unlike the read-shaped Cortex inference endpoints which map to SELECT-over-POST. `EXEC` offers no projection advantage against the identical `ResultSet` body and its output is not SQL-composable. The full evaluation is in [NOTES.md](NOTES.md).
+Statement submission maps to `INSERT ... RETURNING` deliberately: it is an async-capable work-creation operation - submission runs work on a warehouse and mints a statement handle to poll (`async=true` returns the handle immediately; synchronous submission returns partition 0 inline with the same handle for the remaining partitions). That lifecycle - create, poll via `statements.get_statement_status`, cancel via `DELETE` - is INSERT-shaped, unlike the synchronous read-shaped Cortex inference endpoints which map to SELECT-over-POST. `EXEC` offers no projection advantage against the identical `ResultSet` body and its output is not SQL-composable. The full evaluation is in [NOTES.md](NOTES.md).
 
 ```sql
 -- submit a statement against a warehouse and read the result
