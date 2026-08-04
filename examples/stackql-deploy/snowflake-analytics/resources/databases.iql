@@ -1,0 +1,46 @@
+/*+ exists */
+SELECT COUNT(*) as count
+FROM snowflake.databases.databases
+WHERE name = '{{ database_name }}'
+AND endpoint = '{{ endpoint }}';
+
+/*+ create */
+INSERT INTO snowflake.databases.databases (
+name,
+kind,
+comment,
+data_retention_time_in_days,
+endpoint
+)
+SELECT
+'{{ database_name }}',
+'{{ kind }}',
+'{{ comment }}',
+ {{ data_retention_time_in_days }},
+'{{ endpoint }}';
+
+/*+ update */
+REPLACE snowflake.databases.databases
+SET
+name = '{{ database_name }}',
+kind = '{{ kind }}',
+comment = '{{ comment }}',
+data_retention_time_in_days = {{ data_retention_time_in_days }}
+WHERE database_name = '{{ database_name }}'
+AND endpoint = '{{ endpoint }}';
+
+/*+ statecheck, retries=3, retry_delay=3 */
+SELECT COUNT(*) as count
+FROM snowflake.databases.databases
+WHERE name = '{{ database_name }}'
+AND endpoint = '{{ endpoint }}'
+AND kind = '{{ kind }}'
+AND comment = '{{ comment }}';
+
+/*+ exports */
+SELECT '{{ database_name }}' as database_name;
+
+/*+ delete */
+DELETE FROM snowflake.databases.databases
+WHERE name = '{{ database_name }}'
+AND endpoint = '{{ endpoint }}';

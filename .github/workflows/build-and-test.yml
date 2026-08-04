@@ -1,0 +1,158 @@
+name: build-and-test
+
+on:
+  push:
+    branches: [stackql-provider, 'feature/**']
+    paths-ignore: ['website/**']
+  pull_request:
+    branches: [stackql-provider]
+    paths-ignore: ['website/**']
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # full history: the spec pin is derived from git log on
+          # specifications/ and a shallow clone resolves it to HEAD
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install stackql
+        run: |
+          curl -L https://releases.stackql.io/stackql/latest/stackql_linux_amd64.zip -o stackql.zip
+          unzip -o stackql.zip
+          chmod +x stackql
+          echo "STACKQL=$PWD/stackql" >> "$GITHUB_ENV"
+
+      - name: Build provider from pinned specs
+        run: make build
+
+      - name: Fail on uncommitted generation drift
+        run: |
+          git add -N .
+          if ! git diff --quiet -- provider-dev/openapi provider-dev/config; then
+            echo "Generated output differs from the committed artifacts - run 'make build' and commit."
+            git diff --stat -- provider-dev/openapi provider-dev/config
+            exit 1
+          fi
+
+      - name: Offline validation
+        run: node tests/offline_validation.mjs
+
+      - name: Integration tests (mock Snowflake REST server)
+        run: npm run test-integration
+        env:
+          SNOWFLAKE_PAT: dummy-token
+
+      - name: Meta-route tests
+        run: |
+          npm run start-server
+          npm run test-meta-routes -- snowflake
+          npm run stop-server
+
+  smoke:
+    # secret-gated live smoke suite against the dev account; skipped with an
+    # explicit notice when the secret is not configured (forks, PRs from
+    # outside). Job-level env is required: a step's own env map is not
+    # visible to its own `if` condition.
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name != 'pull_request'
+    env:
+      SNOWFLAKE_PAT: ${{ secrets.SNOWFLAKE_PAT }}
+      SNOWFLAKE_ENDPOINT: ${{ vars.SNOWFLAKE_ENDPOINT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          pip install pystackql
+
+      - name: Build provider from pinned specs
+        run: make build
+
+      - name: Live smoke suite
+        if: env.SNOWFLAKE_PAT != ''
+        run: python tests/smoke_test.py
+
+      - name: Live smoke skipped (no credential)
+        if: env.SNOWFLAKE_PAT == ''
+        run: |
+          echo "::notice title=Live smoke suite skipped::SNOWFLAKE_PAT secret is not configured - the live smoke suite did not run. Set the SNOWFLAKE_PAT repo secret (and optionally the SNOWFLAKE_ENDPOINT repo variable) to enable it. Credential-free coverage still ran via the mock-server integration suite."
+
+  upstream-sync-check:
+    # diff specifications/ against the upstream default branch and open an
+    # issue when drift appears (the fork is synced manually, never silently)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Diff against upstream
+        id: drift
+        run: |
+          git remote add upstream https://github.com/snowflakedb/snowflake-rest-api-specs.git
+          git fetch upstream --depth 1
+          UPSTREAM_DEFAULT=$(git remote show upstream | sed -n 's/.*HEAD branch: //p')
+          if git diff --quiet "upstream/${UPSTREAM_DEFAULT}" -- specifications/; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            git diff --stat "upstream/${UPSTREAM_DEFAULT}" -- specifications/ > drift.txt
+            cat drift.txt
+          fi
+
+      - name: Report drift (issue when possible, warning otherwise)
+        if: steps.drift.outputs.drift == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const stat = fs.readFileSync('drift.txt', 'utf8');
+            const title = 'Upstream spec drift detected in specifications/';
+            const body = 'The upstream default branch has spec changes not yet synced into this fork.\n\n```\n' + stat + '\n```\nSync the fork, re-run `make build`, review the generated diff, and update the spec pin.';
+            await core.summary
+              .addHeading(title)
+              .addCodeBlock(stat)
+              .addRaw('Sync the fork, re-run `make build`, review the generated diff, and update the spec pin.')
+              .write();
+            try {
+              const { data: issues } = await github.rest.issues.listForRepo({
+                owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'upstream-sync'
+              });
+              if (issues.some(i => i.title === title)) return;
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title,
+                labels: ['upstream-sync'], body
+              });
+            } catch (e) {
+              // Issues are disabled on this repo (it is a fork - GitHub's
+              // default) or the token lacks rights; drift reporting must not
+              // fail CI, so surface it as a warning annotation instead.
+              core.warning(`${title} - could not open a tracking issue (${e.message}); see the job summary for the diff`);
+            }

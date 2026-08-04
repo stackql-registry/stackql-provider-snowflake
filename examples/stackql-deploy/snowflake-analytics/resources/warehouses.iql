@@ -1,0 +1,50 @@
+/*+ exists */
+SELECT COUNT(*) as count
+FROM snowflake.warehouses.warehouses
+WHERE name = '{{ warehouse_name }}'
+AND endpoint = '{{ endpoint }}';
+
+/*+ create */
+INSERT INTO snowflake.warehouses.warehouses (
+name,
+warehouse_size,
+auto_suspend,
+auto_resume,
+initially_suspended,
+comment,
+endpoint
+)
+SELECT
+'{{ warehouse_name }}',
+'{{ warehouse_size }}',
+ {{ auto_suspend }},
+'{{ auto_resume }}',
+'{{ initially_suspended }}',
+'{{ comment }}',
+'{{ endpoint }}';
+
+/*+ update */
+REPLACE snowflake.warehouses.warehouses
+SET
+name = '{{ warehouse_name }}',
+warehouse_size = '{{ warehouse_size }}',
+auto_suspend = {{ auto_suspend }},
+auto_resume = '{{ auto_resume }}',
+comment = '{{ comment }}'
+WHERE warehouse_name = '{{ warehouse_name }}'
+AND endpoint = '{{ endpoint }}';
+
+/*+ statecheck, retries=3, retry_delay=3 */
+SELECT COUNT(*) as count
+FROM snowflake.warehouses.warehouses
+WHERE name = '{{ warehouse_name }}'
+AND endpoint = '{{ endpoint }}'
+AND auto_suspend = {{ auto_suspend }};
+
+/*+ exports */
+SELECT '{{ warehouse_name }}' as warehouse_name;
+
+/*+ delete */
+DELETE FROM snowflake.warehouses.warehouses
+WHERE name = '{{ warehouse_name }}'
+AND endpoint = '{{ endpoint }}';

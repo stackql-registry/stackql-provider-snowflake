@@ -1,0 +1,148 @@
+See also:
+[[` SHOW `]](https://stackql.io/docs/language-spec/show) [[` DESCRIBE `]](https://stackql.io/docs/language-spec/describe)  [[` REGISTRY `]](https://stackql.io/docs/language-spec/registry)
+* * *
+
+## Installation
+
+To use the `snowflake` provider, first [download and install `stackql`](https://stackql.io/downloads):
+
+```bash
+curl -L https://bit.ly/stackql-zip -O && unzip stackql-zip
+```
+
+Then pull the latest version of the provider:
+
+```bash
+REGISTRY PULL snowflake;
+```
+> To view previous provider versions or to pull a specific provider version, see [here](https://stackql.io/docs/language-spec/registry).
+
+## Authentication
+
+The following system environment variables are used for authentication by default:
+
+- <CopyableCode code="SNOWFLAKE_PAT" /> - Snowflake programmatic access token, supplied as a bearer token (see <a href="https://docs.snowflake.com/en/user-guide/programmatic-access-tokens">Using programmatic access tokens</a>)
+
+These variables are sourced at runtime (from the local machine or as CI variables/secrets). Create the token for a least-privileged service role rather than a personal or administrative user.
+
+Every query addresses the account through the `endpoint` server variable - the account identifier in `orgname-accountname` form - supplied via the `WHERE` clause:
+
+```sql
+SELECT name, owner
+FROM snowflake.databases.databases
+WHERE endpoint = 'myorg-myaccount';
+```
+
+To find your account identifier, run the following in Snowsight (or see __Admin > Accounts__):
+
+```sql
+SELECT CURRENT_ORGANIZATION_NAME() || '-' || CURRENT_ACCOUNT_NAME();
+```
+
+> Use the account name form (`myorg-myaccount`), not the legacy account locator. See <a href="https://docs.snowflake.com/en/user-guide/admin-account-identifier">Account identifiers</a> for details.
+
+<details>
+
+<summary>Using different environment variables</summary>
+
+To use different environment variables (instead of the defaults), use the `--auth` flag of the `stackql` program.  For example:
+
+```bash
+
+AUTH='{ "snowflake": { "type": "bearer",  "credentialsenvvar": "SNOWFLAKE_PAT" }}'
+stackql shell --auth="${AUTH}"
+
+```
+or using PowerShell:
+
+```powershell
+
+$Auth = "{ 'snowflake': { 'type': 'bearer',  'credentialsenvvar': 'SNOWFLAKE_PAT' }}"
+stackql.exe shell --auth=$Auth
+
+```
+</details>
+
+## Database inventory
+
+All databases in the account, with ownership and retention settings:
+
+```sql
+SELECT
+  name,
+  owner,
+  kind,
+  retention_time,
+  comment
+FROM snowflake.databases.databases
+WHERE endpoint = 'myorg-myaccount'
+ORDER BY name;
+```
+
+## Grant audit
+
+Grants are REST resources - granting is an `INSERT`, revoking is a `DELETE`, and auditing is a `SELECT`. Every grant held by a role, straight from the account:
+
+```sql
+SELECT
+  securable_type,
+  securable_name,
+  privileges,
+  grant_option,
+  granted_by_name
+FROM snowflake.grants.grants
+WHERE grantee_type = 'role'
+AND grantee_name = 'ANALYST'
+AND endpoint = 'myorg-myaccount';
+```
+
+Repeat per grantee (`role`, `user`, `database-role`, `application-role`, `share`) to audit the whole account - no state file to drift, nothing to reconcile.
+
+## Declarative warehouse definition
+
+`REPLACE` maps to Snowflake's `CREATE OR ALTER` semantics - the statement below creates the warehouse if it does not exist, or alters it to match if it does. Idempotent and re-runnable, no state required:
+
+```sql
+REPLACE snowflake.warehouses.warehouses
+SET
+  warehouse_size = 'XSMALL',
+  auto_suspend = 60,
+  auto_resume = 'true',
+  comment = 'reporting warehouse, managed by stackql'
+WHERE warehouse_name = 'REPORTING_WH'
+AND endpoint = 'myorg-myaccount';
+```
+
+## Cortex AI inference
+
+Cortex inference is a `SELECT` - `WHERE` members feed the request body, and the completion projects as columns. The OpenAI-compatible and Anthropic-compatible endpoints are both available:
+
+```sql
+SELECT
+  model,
+  choices,
+  usage
+FROM snowflake.cortex.chat_completions
+WHERE model = 'llama3.1-8b'
+AND messages = '[{"role": "user", "content": "Summarize warehouse spend drivers"}]'
+AND endpoint = 'myorg-myaccount';
+```
+
+> Streaming (SSE) responses are out of scope; completions return in JSON mode. Model availability varies by account and region.
+
+## Data plane: submit a statement
+
+Statement submission is an `INSERT` with a `RETURNING` clause - inventory the control plane and query the data inside it in the same session:
+
+```sql
+INSERT INTO snowflake.sqlapi.statements (
+  statement,
+  warehouse,
+  endpoint
+)
+SELECT
+  'SELECT count(*) FROM lineitem',
+  'REPORTING_WH',
+  'myorg-myaccount'
+RETURNING statement_handle, result_set_meta_data, data;
+```

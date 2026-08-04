@@ -1,0 +1,25 @@
+/*+ createorupdate */
+INSERT INTO snowflake.grants.grants (
+grantee_type,
+grantee_name,
+securable_type,
+securable_name,
+privileges,
+endpoint
+)
+SELECT
+'role',
+'{{ grantee_name }}',
+'{{ securable_type }}',
+'{{ securable_name }}',
+'{{ privileges }}',
+'{{ endpoint }}';
+
+/*+ delete */
+DELETE FROM snowflake.grants.grants
+WHERE grantee_type = 'role'
+AND grantee_name = '{{ grantee_name }}'
+AND securable_type = '{{ securable_type }}'
+AND securable_name = '{{ securable_name }}'
+AND privilege = '{{ privileges | first }}'
+AND endpoint = '{{ endpoint }}';

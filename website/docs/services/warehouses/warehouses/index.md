@@ -1,0 +1,1081 @@
+--- 
+title: warehouses
+hide_title: false
+hide_table_of_contents: false
+keywords:
+  - warehouses
+  - warehouses
+  - snowflake
+  - infrastructure-as-code
+  - configuration-as-data
+  - cloud inventory
+description: Query, deploy and manage snowflake resources using SQL
+custom_edit_url: null
+image: /img/stackql-snowflake-provider-featured-image.png
+---
+
+import CopyableCode from '@site/src/components/CopyableCode/CopyableCode';
+import CodeBlock from '@theme/CodeBlock';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Creates, updates, deletes, gets or lists a <code>warehouses</code> resource.
+
+## Overview
+<table><tbody>
+<tr><td><b>Name</b></td><td><CopyableCode code="warehouses" /></td></tr>
+<tr><td><b>Type</b></td><td>Resource</td></tr>
+<tr><td><b>Id</b></td><td><CopyableCode code="snowflake.warehouses.warehouses" /></td></tr>
+</tbody></table>
+
+## Fields
+
+The following fields are returned by `SELECT` queries:
+
+<Tabs
+    defaultValue="get"
+    values={[
+        { label: 'get', value: 'get' },
+        { label: 'list', value: 'list' }
+    ]}
+>
+<TabItem value="get">
+
+successful
+
+<table>
+<thead>
+    <tr>
+    <th>Name</th>
+    <th>Datatype</th>
+    <th>Description</th>
+    </tr>
+</thead>
+<tbody>
+<tr>
+    <td><CopyableCode code="name" /></td>
+    <td><code>string</code></td>
+    <td>A Snowflake object identifier. If the identifier contains spaces or special characters, the entire string must be enclosed in double quotes. Identifiers enclosed in double quotes are also case-sensitive. (pattern: <code>^"(&#91;^"&#93;|"")+"|&#91;a-zA-Z_&#93;&#91;a-zA-Z0-9_$&#93;*$</code>, example: TEST_NAME)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="auto_resume" /></td>
+    <td><code>string</code></td>
+    <td>Specifies whether to automatically resume a warehouse when a SQL statement is submitted to it (true, false)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="auto_suspend" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>time in seconds before auto suspend</td>
+</tr>
+<tr>
+    <td><CopyableCode code="available" /></td>
+    <td><code>string (Percentage)</code></td>
+    <td>Percentage of the warehouse compute resources that are provisioned and available.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="budget" /></td>
+    <td><code>string</code></td>
+    <td>Comment representing budget for warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="comment" /></td>
+    <td><code>string (comment)</code></td>
+    <td>Specifies a comment for the warehouse</td>
+</tr>
+<tr>
+    <td><CopyableCode code="created_on" /></td>
+    <td><code>string (date-time)</code></td>
+    <td>Date and time when the warehouse was created.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="enable_query_acceleration" /></td>
+    <td><code>string</code></td>
+    <td>Specifies whether to enable the query acceleration service for queries that rely on this warehouse for compute resources (true, false)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="initially_suspended" /></td>
+    <td><code>string</code></td>
+    <td>Specifies whether the warehouse is created initially in the Suspended state (true, false)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="is_current" /></td>
+    <td><code>boolean</code></td>
+    <td>Whether the warehouse is in use for the session. Only one warehouse can be in use at a time for a session.  To specify or change the warehouse for a session, use the USE WAREHOUSE command.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="is_default" /></td>
+    <td><code>boolean</code></td>
+    <td>Whether the warehouse is the default for the current user.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="kind" /></td>
+    <td><code>string (warehouse)</code></td>
+    <td></td>
+</tr>
+<tr>
+    <td><CopyableCode code="max_cluster_count" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Specifies the maximum number of clusters for a multi-cluster warehouse</td>
+</tr>
+<tr>
+    <td><CopyableCode code="max_concurrency_level" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Object parameter that specifies the concurrency level for SQL statements executed by a warehouse cluster</td>
+</tr>
+<tr>
+    <td><CopyableCode code="min_cluster_count" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Specifies the minimum number of clusters for a multi-cluster warehouse</td>
+</tr>
+<tr>
+    <td><CopyableCode code="other" /></td>
+    <td><code>string (Percentage)</code></td>
+    <td>Percentage of the warehouse compute resources that are in a state other than available,  provisioning, or quiescing.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="owner" /></td>
+    <td><code>string (role name)</code></td>
+    <td>Role that owns the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="owner_role_type" /></td>
+    <td><code>string</code></td>
+    <td>The type of role that owns the object.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="provisioning" /></td>
+    <td><code>string (Percentage)</code></td>
+    <td>Percentage of the warehouse compute resources that are in the process of provisioning.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="query_acceleration_max_scale_factor" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size</td>
+</tr>
+<tr>
+    <td><CopyableCode code="queued" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Number of SQL statements that are queued for the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="quiescing" /></td>
+    <td><code>string (Percentage)</code></td>
+    <td>Percentage of the warehouse compute resources that are executing SQL statements,  but will be shut down once the queries complete.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="resource_monitor" /></td>
+    <td><code>string</code></td>
+    <td>A Snowflake object identifier. If the identifier contains spaces or special characters, the entire string must be enclosed in double quotes. Identifiers enclosed in double quotes are also case-sensitive. (pattern: <code>^"(&#91;^"&#93;|"")+"|&#91;a-zA-Z_&#93;&#91;a-zA-Z0-9_$&#93;*$</code>, example: TEST_NAME)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="resumed_on" /></td>
+    <td><code>string (date-time)</code></td>
+    <td>Date and time when the warehouse was last started or restarted.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="running" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Number of SQL statements that are being executed by the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="scaling_policy" /></td>
+    <td><code>string</code></td>
+    <td>Scaling policy of warehouse, possible scaling policies: STANDARD, ECONOMY</td>
+</tr>
+<tr>
+    <td><CopyableCode code="size" /></td>
+    <td><code>string</code></td>
+    <td>[Deprecated] names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large</td>
+</tr>
+<tr>
+    <td><CopyableCode code="started_clusters" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Number of clusters currently started.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="state" /></td>
+    <td><code>string</code></td>
+    <td>The state of warehouse, possible states: STARTED, STARTING, DYNAMIC, SUSPENDED, RESIZING, RESUMING, SUSPENDING</td>
+</tr>
+<tr>
+    <td><CopyableCode code="statement_queued_timeout_in_seconds" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Object parameter that specifies the time, in seconds, a SQL statement can be queued on a warehouse before it is canceled by the system</td>
+</tr>
+<tr>
+    <td><CopyableCode code="statement_timeout_in_seconds" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Object parameter that specifies the time, in seconds, after which a running SQL statement  is canceled by the system</td>
+</tr>
+<tr>
+    <td><CopyableCode code="target_statement_size" /></td>
+    <td><code>string</code></td>
+    <td>Names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large</td>
+</tr>
+<tr>
+    <td><CopyableCode code="type" /></td>
+    <td><code>string</code></td>
+    <td>[Deprecated] Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED</td>
+</tr>
+<tr>
+    <td><CopyableCode code="updated_on" /></td>
+    <td><code>string (date-time)</code></td>
+    <td>Date and time when the warehouse was last updated,  which includes changing any of the properties of the warehouse or changing the state (STARTED, SUSPENDED, RESIZING) of the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="wait_for_completion" /></td>
+    <td><code>string</code></td>
+    <td>When resizing a warehouse, you can use this parameter to block the return of the ALTER WAREHOUSE command until the resize has finished provisioning all its compute resources (true, false)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="warehouse_credit_limit" /></td>
+    <td><code>integer (int64)</code></td>
+    <td>Credit limit that are can be executed by the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="warehouse_size" /></td>
+    <td><code>string</code></td>
+    <td>Size of warehouse, possible sizes: XSMALL, SMALL, MEDIUM, LARGE, XLARGE, XXLARGE, XXXLARGE, X4LARGE, X5LARGE, X6LARGE</td>
+</tr>
+<tr>
+    <td><CopyableCode code="warehouse_type" /></td>
+    <td><code>string</code></td>
+    <td>Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED</td>
+</tr>
+</tbody>
+</table>
+</TabItem>
+<TabItem value="list">
+
+A Snowflake virtual warehouse
+
+<table>
+<thead>
+    <tr>
+    <th>Name</th>
+    <th>Datatype</th>
+    <th>Description</th>
+    </tr>
+</thead>
+<tbody>
+<tr>
+    <td><CopyableCode code="name" /></td>
+    <td><code>string</code></td>
+    <td>A Snowflake object identifier. If the identifier contains spaces or special characters, the entire string must be enclosed in double quotes. Identifiers enclosed in double quotes are also case-sensitive. (pattern: <code>^"(&#91;^"&#93;|"")+"|&#91;a-zA-Z_&#93;&#91;a-zA-Z0-9_$&#93;*$</code>, example: TEST_NAME)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="auto_resume" /></td>
+    <td><code>string</code></td>
+    <td>Specifies whether to automatically resume a warehouse when a SQL statement is submitted to it (true, false)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="auto_suspend" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>time in seconds before auto suspend</td>
+</tr>
+<tr>
+    <td><CopyableCode code="available" /></td>
+    <td><code>string (Percentage)</code></td>
+    <td>Percentage of the warehouse compute resources that are provisioned and available.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="budget" /></td>
+    <td><code>string</code></td>
+    <td>Comment representing budget for warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="comment" /></td>
+    <td><code>string (comment)</code></td>
+    <td>Specifies a comment for the warehouse</td>
+</tr>
+<tr>
+    <td><CopyableCode code="created_on" /></td>
+    <td><code>string (date-time)</code></td>
+    <td>Date and time when the warehouse was created.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="enable_query_acceleration" /></td>
+    <td><code>string</code></td>
+    <td>Specifies whether to enable the query acceleration service for queries that rely on this warehouse for compute resources (true, false)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="initially_suspended" /></td>
+    <td><code>string</code></td>
+    <td>Specifies whether the warehouse is created initially in the Suspended state (true, false)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="is_current" /></td>
+    <td><code>boolean</code></td>
+    <td>Whether the warehouse is in use for the session. Only one warehouse can be in use at a time for a session.  To specify or change the warehouse for a session, use the USE WAREHOUSE command.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="is_default" /></td>
+    <td><code>boolean</code></td>
+    <td>Whether the warehouse is the default for the current user.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="kind" /></td>
+    <td><code>string (warehouse)</code></td>
+    <td></td>
+</tr>
+<tr>
+    <td><CopyableCode code="max_cluster_count" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Specifies the maximum number of clusters for a multi-cluster warehouse</td>
+</tr>
+<tr>
+    <td><CopyableCode code="max_concurrency_level" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Object parameter that specifies the concurrency level for SQL statements executed by a warehouse cluster</td>
+</tr>
+<tr>
+    <td><CopyableCode code="min_cluster_count" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Specifies the minimum number of clusters for a multi-cluster warehouse</td>
+</tr>
+<tr>
+    <td><CopyableCode code="other" /></td>
+    <td><code>string (Percentage)</code></td>
+    <td>Percentage of the warehouse compute resources that are in a state other than available,  provisioning, or quiescing.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="owner" /></td>
+    <td><code>string (role name)</code></td>
+    <td>Role that owns the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="owner_role_type" /></td>
+    <td><code>string</code></td>
+    <td>The type of role that owns the object.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="provisioning" /></td>
+    <td><code>string (Percentage)</code></td>
+    <td>Percentage of the warehouse compute resources that are in the process of provisioning.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="query_acceleration_max_scale_factor" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size</td>
+</tr>
+<tr>
+    <td><CopyableCode code="queued" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Number of SQL statements that are queued for the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="quiescing" /></td>
+    <td><code>string (Percentage)</code></td>
+    <td>Percentage of the warehouse compute resources that are executing SQL statements,  but will be shut down once the queries complete.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="resource_monitor" /></td>
+    <td><code>string</code></td>
+    <td>A Snowflake object identifier. If the identifier contains spaces or special characters, the entire string must be enclosed in double quotes. Identifiers enclosed in double quotes are also case-sensitive. (pattern: <code>^"(&#91;^"&#93;|"")+"|&#91;a-zA-Z_&#93;&#91;a-zA-Z0-9_$&#93;*$</code>, example: TEST_NAME)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="resumed_on" /></td>
+    <td><code>string (date-time)</code></td>
+    <td>Date and time when the warehouse was last started or restarted.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="running" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Number of SQL statements that are being executed by the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="scaling_policy" /></td>
+    <td><code>string</code></td>
+    <td>Scaling policy of warehouse, possible scaling policies: STANDARD, ECONOMY</td>
+</tr>
+<tr>
+    <td><CopyableCode code="size" /></td>
+    <td><code>string</code></td>
+    <td>[Deprecated] names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large</td>
+</tr>
+<tr>
+    <td><CopyableCode code="started_clusters" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Number of clusters currently started.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="state" /></td>
+    <td><code>string</code></td>
+    <td>The state of warehouse, possible states: STARTED, STARTING, DYNAMIC, SUSPENDED, RESIZING, RESUMING, SUSPENDING</td>
+</tr>
+<tr>
+    <td><CopyableCode code="statement_queued_timeout_in_seconds" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Object parameter that specifies the time, in seconds, a SQL statement can be queued on a warehouse before it is canceled by the system</td>
+</tr>
+<tr>
+    <td><CopyableCode code="statement_timeout_in_seconds" /></td>
+    <td><code>integer (int32)</code></td>
+    <td>Object parameter that specifies the time, in seconds, after which a running SQL statement  is canceled by the system</td>
+</tr>
+<tr>
+    <td><CopyableCode code="target_statement_size" /></td>
+    <td><code>string</code></td>
+    <td>Names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large</td>
+</tr>
+<tr>
+    <td><CopyableCode code="type" /></td>
+    <td><code>string</code></td>
+    <td>[Deprecated] Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED</td>
+</tr>
+<tr>
+    <td><CopyableCode code="updated_on" /></td>
+    <td><code>string (date-time)</code></td>
+    <td>Date and time when the warehouse was last updated,  which includes changing any of the properties of the warehouse or changing the state (STARTED, SUSPENDED, RESIZING) of the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="wait_for_completion" /></td>
+    <td><code>string</code></td>
+    <td>When resizing a warehouse, you can use this parameter to block the return of the ALTER WAREHOUSE command until the resize has finished provisioning all its compute resources (true, false)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="warehouse_credit_limit" /></td>
+    <td><code>integer (int64)</code></td>
+    <td>Credit limit that are can be executed by the warehouse.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="warehouse_size" /></td>
+    <td><code>string</code></td>
+    <td>Size of warehouse, possible sizes: XSMALL, SMALL, MEDIUM, LARGE, XLARGE, XXLARGE, XXXLARGE, X4LARGE, X5LARGE, X6LARGE</td>
+</tr>
+<tr>
+    <td><CopyableCode code="warehouse_type" /></td>
+    <td><code>string</code></td>
+    <td>Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED</td>
+</tr>
+</tbody>
+</table>
+</TabItem>
+</Tabs>
+
+## Methods
+
+The following methods are available for this resource:
+
+<table>
+<thead>
+    <tr>
+    <th>Name</th>
+    <th>Accessible by</th>
+    <th>Required Params</th>
+    <th>Optional Params</th>
+    <th>Description</th>
+    </tr>
+</thead>
+<tbody>
+<tr>
+    <td><a href="#get"><CopyableCode code="get" /></a></td>
+    <td><CopyableCode code="select" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td></td>
+    <td>Describes the warehouse, show information of the chosen warehouse. Equivalent to DESCRIBE WAREHOUSE in SQL.</td>
+</tr>
+<tr>
+    <td><a href="#list"><CopyableCode code="list" /></a></td>
+    <td><CopyableCode code="select" /></td>
+    <td><a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-like"><code>like</code></a></td>
+    <td>Show a list of warehouse filtered by pattern. Equivalent to SHOW WAREHOUSE in SQL.</td>
+</tr>
+<tr>
+    <td><a href="#create"><CopyableCode code="create" /></a></td>
+    <td><CopyableCode code="insert" /></td>
+    <td><a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
+    <td><a href="#parameter-createMode"><code>createMode</code></a></td>
+    <td>Create a virtual warehouse. Equivalent to CREATE WAREHOUSE in SQL.</td>
+</tr>
+<tr>
+    <td><a href="#create_or_alter"><CopyableCode code="create_or_alter" /></a></td>
+    <td><CopyableCode code="replace" /></td>
+    <td><a href="#parameter-warehouse_name"><code>warehouse_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
+    <td></td>
+    <td>Create a (or alter an existing) warehouse. Even if the operation is just an alter, the full property set must be provided.</td>
+</tr>
+<tr>
+    <td><a href="#delete"><CopyableCode code="delete" /></a></td>
+    <td><CopyableCode code="delete" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
+    <td>Removes the specified virtual warehouse from the system. Equivalent to DROP WAREHOUSE in SQL.</td>
+</tr>
+<tr>
+    <td><a href="#resume"><CopyableCode code="resume" /></a></td>
+    <td><CopyableCode code="exec" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
+    <td>Bring current warehouse to a usable ‘Running’ state by provisioning compute resources if current warehouse is suspended.</td>
+</tr>
+<tr>
+    <td><a href="#suspend"><CopyableCode code="suspend" /></a></td>
+    <td><CopyableCode code="exec" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
+    <td>Remove all compute nodes from a warehouse and put the warehouse into a ‘Suspended’ state if current warehouse is not suspended.</td>
+</tr>
+<tr>
+    <td><a href="#rename"><CopyableCode code="rename" /></a></td>
+    <td><CopyableCode code="exec" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
+    <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
+    <td>Specifies a new identifier for the warehouse; must be unique for current account.</td>
+</tr>
+<tr>
+    <td><a href="#abort"><CopyableCode code="abort" /></a></td>
+    <td><CopyableCode code="exec" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
+    <td>Aborts all the queries currently running or queued on the warehouse.</td>
+</tr>
+<tr>
+    <td><a href="#use_deprecated"><CopyableCode code="use_deprecated" /></a></td>
+    <td><CopyableCode code="exec" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td></td>
+    <td>[Deprecated] Specifies the active/current warehouse for the session.</td>
+</tr>
+<tr>
+    <td><a href="#enable"><CopyableCode code="enable" /></a></td>
+    <td><CopyableCode code="exec" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
+    <td>Enable an adaptive warehouse and put the warehouse into a ‘enabled’ state, if the warehouse is not enabled.</td>
+</tr>
+<tr>
+    <td><a href="#disable"><CopyableCode code="disable" /></a></td>
+    <td><CopyableCode code="exec" /></td>
+    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
+    <td>Disable an adaptive warehouse and put the warehouse into a ‘disabled’ state, if the warehouse is not disabled.</td>
+</tr>
+</tbody>
+</table>
+
+## Parameters
+
+Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#methods) section to see which parameters are required or optional for each operation.
+
+<table>
+<thead>
+    <tr>
+    <th>Name</th>
+    <th>Datatype</th>
+    <th>Description</th>
+    </tr>
+</thead>
+<tbody>
+<tr id="parameter-endpoint">
+    <td><CopyableCode code="endpoint" /></td>
+    <td><code>string</code></td>
+    <td>Organization and account identifier (orgname-accountname) (default: orgname-accountname)</td>
+</tr>
+<tr id="parameter-name">
+    <td><CopyableCode code="name" /></td>
+    <td><code>string</code></td>
+    <td>Identifier (i.e. name) for the resource.</td>
+</tr>
+<tr id="parameter-warehouse_name">
+    <td><CopyableCode code="warehouse_name" /></td>
+    <td><code>string</code></td>
+    <td>Identifier (i.e. name) for the resource.</td>
+</tr>
+<tr id="parameter-createMode">
+    <td><CopyableCode code="createMode" /></td>
+    <td><code>string</code></td>
+    <td>Parameter allowing support for different modes of resource creation. Possible values include: - `errorIfExists`: Throws an error if you try to create a resource that already exists. - `orReplace`: Automatically replaces the existing resource with the current one. - `ifNotExists`: Creates a new resource when an alter is requested for a non-existent resource.</td>
+</tr>
+<tr id="parameter-ifExists">
+    <td><CopyableCode code="ifExists" /></td>
+    <td><code>boolean</code></td>
+    <td>Parameter that specifies how to handle the request for a resource that does not exist: - `true`: The endpoint does not throw an error if the resource does not exist. It returns a 200 success response, but does not take any action on the resource. - `false`: The endpoint throws an error if the resource doesn't exist.</td>
+</tr>
+<tr id="parameter-like">
+    <td><CopyableCode code="like" /></td>
+    <td><code>string</code></td>
+    <td>Parameter to filter the command output by resource name. Uses case-insensitive pattern matching, with support for SQL wildcard characters.</td>
+</tr>
+</tbody>
+</table>
+
+## `SELECT` examples
+
+<Tabs
+    defaultValue="get"
+    values={[
+        { label: 'get', value: 'get' },
+        { label: 'list', value: 'list' }
+    ]}
+>
+<TabItem value="get">
+
+Describes the warehouse, show information of the chosen warehouse. Equivalent to DESCRIBE WAREHOUSE in SQL.
+
+```sql
+SELECT
+name,
+auto_resume,
+auto_suspend,
+available,
+budget,
+comment,
+created_on,
+enable_query_acceleration,
+initially_suspended,
+is_current,
+is_default,
+kind,
+max_cluster_count,
+max_concurrency_level,
+min_cluster_count,
+other,
+owner,
+owner_role_type,
+provisioning,
+query_acceleration_max_scale_factor,
+queued,
+quiescing,
+resource_monitor,
+resumed_on,
+running,
+scaling_policy,
+size,
+started_clusters,
+state,
+statement_queued_timeout_in_seconds,
+statement_timeout_in_seconds,
+target_statement_size,
+type,
+updated_on,
+wait_for_completion,
+warehouse_credit_limit,
+warehouse_size,
+warehouse_type
+FROM snowflake.warehouses.warehouses
+WHERE name = '{{ name }}' -- required
+AND endpoint = '{{ endpoint }}' -- required
+;
+```
+</TabItem>
+<TabItem value="list">
+
+Show a list of warehouse filtered by pattern. Equivalent to SHOW WAREHOUSE in SQL.
+
+```sql
+SELECT
+name,
+auto_resume,
+auto_suspend,
+available,
+budget,
+comment,
+created_on,
+enable_query_acceleration,
+initially_suspended,
+is_current,
+is_default,
+kind,
+max_cluster_count,
+max_concurrency_level,
+min_cluster_count,
+other,
+owner,
+owner_role_type,
+provisioning,
+query_acceleration_max_scale_factor,
+queued,
+quiescing,
+resource_monitor,
+resumed_on,
+running,
+scaling_policy,
+size,
+started_clusters,
+state,
+statement_queued_timeout_in_seconds,
+statement_timeout_in_seconds,
+target_statement_size,
+type,
+updated_on,
+wait_for_completion,
+warehouse_credit_limit,
+warehouse_size,
+warehouse_type
+FROM snowflake.warehouses.warehouses
+WHERE endpoint = '{{ endpoint }}' -- required
+AND "like" = '{{ like }}'
+;
+```
+</TabItem>
+</Tabs>
+
+
+## `INSERT` examples
+
+<Tabs
+    defaultValue="create"
+    values={[
+        { label: 'create', value: 'create' },
+        { label: 'Manifest', value: 'manifest' }
+    ]}
+>
+<TabItem value="create">
+
+Create a virtual warehouse. Equivalent to CREATE WAREHOUSE in SQL.
+
+```sql
+INSERT INTO snowflake.warehouses.warehouses (
+name,
+warehouse_type,
+warehouse_size,
+wait_for_completion,
+max_cluster_count,
+min_cluster_count,
+scaling_policy,
+auto_suspend,
+auto_resume,
+initially_suspended,
+resource_monitor,
+comment,
+enable_query_acceleration,
+query_acceleration_max_scale_factor,
+max_concurrency_level,
+statement_queued_timeout_in_seconds,
+statement_timeout_in_seconds,
+type,
+size,
+warehouse_credit_limit,
+target_statement_size,
+endpoint,
+createMode
+)
+SELECT 
+'{{ name }}' /* required */,
+'{{ warehouse_type }}',
+'{{ warehouse_size }}',
+'{{ wait_for_completion }}',
+{{ max_cluster_count }},
+{{ min_cluster_count }},
+'{{ scaling_policy }}',
+{{ auto_suspend }},
+'{{ auto_resume }}',
+'{{ initially_suspended }}',
+'{{ resource_monitor }}',
+'{{ comment }}',
+'{{ enable_query_acceleration }}',
+{{ query_acceleration_max_scale_factor }},
+{{ max_concurrency_level }},
+{{ statement_queued_timeout_in_seconds }},
+{{ statement_timeout_in_seconds }},
+'{{ type }}',
+'{{ size }}',
+{{ warehouse_credit_limit }},
+'{{ target_statement_size }}',
+'{{ endpoint }}',
+'{{ createMode }}'
+RETURNING
+status
+;
+```
+</TabItem>
+<TabItem value="manifest">
+
+<CodeBlock language="yaml">{`# Description fields are for documentation purposes
+- name: warehouses
+  props:
+    - name: endpoint
+      value: "{{ endpoint }}"
+      description: Required parameter for the warehouses resource.
+    - name: name
+      value: "{{ name }}"
+      description: |
+        A Snowflake object identifier. If the identifier contains spaces or special characters, the entire string must be enclosed in double quotes. Identifiers enclosed in double quotes are also case-sensitive.
+    - name: warehouse_type
+      value: "{{ warehouse_type }}"
+      description: |
+        Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED
+    - name: warehouse_size
+      value: "{{ warehouse_size }}"
+      description: |
+        Size of warehouse, possible sizes: XSMALL, SMALL, MEDIUM, LARGE, XLARGE, XXLARGE, XXXLARGE, X4LARGE, X5LARGE, X6LARGE
+    - name: wait_for_completion
+      value: "{{ wait_for_completion }}"
+      description: |
+        When resizing a warehouse, you can use this parameter to block the return of the ALTER WAREHOUSE command until the resize has finished provisioning all its compute resources
+      valid_values: ['true', 'false']
+    - name: max_cluster_count
+      value: {{ max_cluster_count }}
+      description: |
+        Specifies the maximum number of clusters for a multi-cluster warehouse
+    - name: min_cluster_count
+      value: {{ min_cluster_count }}
+      description: |
+        Specifies the minimum number of clusters for a multi-cluster warehouse
+    - name: scaling_policy
+      value: "{{ scaling_policy }}"
+      description: |
+        Scaling policy of warehouse, possible scaling policies: STANDARD, ECONOMY
+    - name: auto_suspend
+      value: {{ auto_suspend }}
+      description: |
+        time in seconds before auto suspend
+    - name: auto_resume
+      value: "{{ auto_resume }}"
+      description: |
+        Specifies whether to automatically resume a warehouse when a SQL statement is submitted to it
+      valid_values: ['true', 'false']
+    - name: initially_suspended
+      value: "{{ initially_suspended }}"
+      description: |
+        Specifies whether the warehouse is created initially in the Suspended state
+      valid_values: ['true', 'false']
+    - name: resource_monitor
+      value: "{{ resource_monitor }}"
+      description: |
+        A Snowflake object identifier. If the identifier contains spaces or special characters, the entire string must be enclosed in double quotes. Identifiers enclosed in double quotes are also case-sensitive.
+    - name: comment
+      value: "{{ comment }}"
+      description: |
+        Specifies a comment for the warehouse
+    - name: enable_query_acceleration
+      value: "{{ enable_query_acceleration }}"
+      description: |
+        Specifies whether to enable the query acceleration service for queries that rely on this warehouse for compute resources
+      valid_values: ['true', 'false']
+    - name: query_acceleration_max_scale_factor
+      value: {{ query_acceleration_max_scale_factor }}
+      description: |
+        Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size
+    - name: max_concurrency_level
+      value: {{ max_concurrency_level }}
+      description: |
+        Object parameter that specifies the concurrency level for SQL statements executed by a warehouse cluster
+    - name: statement_queued_timeout_in_seconds
+      value: {{ statement_queued_timeout_in_seconds }}
+      description: |
+        Object parameter that specifies the time, in seconds, a SQL statement can be queued on a warehouse before it is canceled by the system
+    - name: statement_timeout_in_seconds
+      value: {{ statement_timeout_in_seconds }}
+      description: |
+        Object parameter that specifies the time, in seconds, after which a running SQL statement  is canceled by the system
+    - name: type
+      value: "{{ type }}"
+      description: |
+        [Deprecated] Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED
+    - name: size
+      value: "{{ size }}"
+      description: |
+        [Deprecated] names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large
+    - name: warehouse_credit_limit
+      value: {{ warehouse_credit_limit }}
+      description: |
+        Credit limit that are can be executed by the warehouse.
+    - name: target_statement_size
+      value: "{{ target_statement_size }}"
+      description: |
+        Names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large
+    - name: createMode
+      value: "{{ createMode }}"
+      description: Parameter allowing support for different modes of resource creation. Possible values include: - \`errorIfExists\`: Throws an error if you try to create a resource that already exists. - \`orReplace\`: Automatically replaces the existing resource with the current one. - \`ifNotExists\`: Creates a new resource when an alter is requested for a non-existent resource.
+      description: Parameter allowing support for different modes of resource creation. Possible values include: - \`errorIfExists\`: Throws an error if you try to create a resource that already exists. - \`orReplace\`: Automatically replaces the existing resource with the current one. - \`ifNotExists\`: Creates a new resource when an alter is requested for a non-existent resource.
+`}</CodeBlock>
+
+</TabItem>
+</Tabs>
+
+
+## `REPLACE` examples
+
+<Tabs
+    defaultValue="create_or_alter"
+    values={[
+        { label: 'create_or_alter', value: 'create_or_alter' }
+    ]}
+>
+<TabItem value="create_or_alter">
+
+Create a (or alter an existing) warehouse. Even if the operation is just an alter, the full property set must be provided.
+
+```sql
+REPLACE snowflake.warehouses.warehouses
+SET 
+name = '{{ name }}',
+warehouse_type = '{{ warehouse_type }}',
+warehouse_size = '{{ warehouse_size }}',
+wait_for_completion = '{{ wait_for_completion }}',
+max_cluster_count = {{ max_cluster_count }},
+min_cluster_count = {{ min_cluster_count }},
+scaling_policy = '{{ scaling_policy }}',
+auto_suspend = {{ auto_suspend }},
+auto_resume = '{{ auto_resume }}',
+initially_suspended = '{{ initially_suspended }}',
+resource_monitor = '{{ resource_monitor }}',
+comment = '{{ comment }}',
+enable_query_acceleration = '{{ enable_query_acceleration }}',
+query_acceleration_max_scale_factor = {{ query_acceleration_max_scale_factor }},
+max_concurrency_level = {{ max_concurrency_level }},
+statement_queued_timeout_in_seconds = {{ statement_queued_timeout_in_seconds }},
+statement_timeout_in_seconds = {{ statement_timeout_in_seconds }},
+type = '{{ type }}',
+size = '{{ size }}',
+warehouse_credit_limit = {{ warehouse_credit_limit }},
+target_statement_size = '{{ target_statement_size }}'
+WHERE 
+warehouse_name = '{{ warehouse_name }}' --required
+AND endpoint = '{{ endpoint }}' --required
+AND name = '{{ name }}' --required
+RETURNING
+status;
+```
+</TabItem>
+</Tabs>
+
+
+## `DELETE` examples
+
+<Tabs
+    defaultValue="delete"
+    values={[
+        { label: 'delete', value: 'delete' }
+    ]}
+>
+<TabItem value="delete">
+
+Removes the specified virtual warehouse from the system. Equivalent to DROP WAREHOUSE in SQL.
+
+```sql
+DELETE FROM snowflake.warehouses.warehouses
+WHERE name = '{{ name }}' --required
+AND endpoint = '{{ endpoint }}' --required
+AND ifExists = '{{ ifExists }}'
+;
+```
+</TabItem>
+</Tabs>
+
+
+## Lifecycle Methods
+
+<Tabs
+    defaultValue="resume"
+    values={[
+        { label: 'resume', value: 'resume' },
+        { label: 'suspend', value: 'suspend' },
+        { label: 'rename', value: 'rename' },
+        { label: 'abort', value: 'abort' },
+        { label: 'use_deprecated', value: 'use_deprecated' },
+        { label: 'enable', value: 'enable' },
+        { label: 'disable', value: 'disable' }
+    ]}
+>
+<TabItem value="resume">
+
+Bring current warehouse to a usable ‘Running’ state by provisioning compute resources if current warehouse is suspended.
+
+```sql
+EXEC snowflake.warehouses.warehouses.resume 
+@name='{{ name }}' --required, 
+@endpoint='{{ endpoint }}' --required, 
+@ifExists={{ ifExists }}
+;
+```
+</TabItem>
+<TabItem value="suspend">
+
+Remove all compute nodes from a warehouse and put the warehouse into a ‘Suspended’ state if current warehouse is not suspended.
+
+```sql
+EXEC snowflake.warehouses.warehouses.suspend 
+@name='{{ name }}' --required, 
+@endpoint='{{ endpoint }}' --required, 
+@ifExists={{ ifExists }}
+;
+```
+</TabItem>
+<TabItem value="rename">
+
+Specifies a new identifier for the warehouse; must be unique for current account.
+
+```sql
+EXEC snowflake.warehouses.warehouses.rename 
+@name='{{ name }}' --required, 
+@endpoint='{{ endpoint }}' --required, 
+@ifExists={{ ifExists }} 
+@@json=
+'{
+"name": "{{ name }}", 
+"warehouse_type": "{{ warehouse_type }}", 
+"warehouse_size": "{{ warehouse_size }}", 
+"wait_for_completion": "{{ wait_for_completion }}", 
+"max_cluster_count": {{ max_cluster_count }}, 
+"min_cluster_count": {{ min_cluster_count }}, 
+"scaling_policy": "{{ scaling_policy }}", 
+"auto_suspend": {{ auto_suspend }}, 
+"auto_resume": "{{ auto_resume }}", 
+"initially_suspended": "{{ initially_suspended }}", 
+"resource_monitor": "{{ resource_monitor }}", 
+"comment": "{{ comment }}", 
+"enable_query_acceleration": "{{ enable_query_acceleration }}", 
+"query_acceleration_max_scale_factor": {{ query_acceleration_max_scale_factor }}, 
+"max_concurrency_level": {{ max_concurrency_level }}, 
+"statement_queued_timeout_in_seconds": {{ statement_queued_timeout_in_seconds }}, 
+"statement_timeout_in_seconds": {{ statement_timeout_in_seconds }}, 
+"type": "{{ type }}", 
+"size": "{{ size }}", 
+"warehouse_credit_limit": {{ warehouse_credit_limit }}, 
+"target_statement_size": "{{ target_statement_size }}"
+}'
+;
+```
+</TabItem>
+<TabItem value="abort">
+
+Aborts all the queries currently running or queued on the warehouse.
+
+```sql
+EXEC snowflake.warehouses.warehouses.abort 
+@name='{{ name }}' --required, 
+@endpoint='{{ endpoint }}' --required, 
+@ifExists={{ ifExists }}
+;
+```
+</TabItem>
+<TabItem value="use_deprecated">
+
+[Deprecated] Specifies the active/current warehouse for the session.
+
+```sql
+EXEC snowflake.warehouses.warehouses.use_deprecated 
+@name='{{ name }}' --required, 
+@endpoint='{{ endpoint }}' --required
+;
+```
+</TabItem>
+<TabItem value="enable">
+
+Enable an adaptive warehouse and put the warehouse into a ‘enabled’ state, if the warehouse is not enabled.
+
+```sql
+EXEC snowflake.warehouses.warehouses.enable 
+@name='{{ name }}' --required, 
+@endpoint='{{ endpoint }}' --required, 
+@ifExists={{ ifExists }}
+;
+```
+</TabItem>
+<TabItem value="disable">
+
+Disable an adaptive warehouse and put the warehouse into a ‘disabled’ state, if the warehouse is not disabled.
+
+```sql
+EXEC snowflake.warehouses.warehouses.disable 
+@name='{{ name }}' --required, 
+@endpoint='{{ endpoint }}' --required, 
+@ifExists={{ ifExists }}
+;
+```
+</TabItem>
+</Tabs>

@@ -1,0 +1,8 @@
+{
+  "upstream_repo": "https://github.com/snowflakedb/snowflake-rest-api-specs",
+  "synced_commit": "4d403c7d86054225cb84772ceffc0972ca629f75",
+  "synced_commit_date": "2025-11-27T23:48:46+01:00",
+  "synced_commit_subject": "Update udf and procedures specs and collections",
+  "spec_count": 50,
+  "recorded_at": "2026-07-11T08:54:30.657Z"
+}
