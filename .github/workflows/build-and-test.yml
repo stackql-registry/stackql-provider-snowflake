@@ -61,11 +61,16 @@ jobs:
           npm run stop-server
 
   smoke:
-    # secret-gated live smoke suite against the dev account; skipped when the
-    # secret is not configured (forks, PRs from outside)
+    # secret-gated live smoke suite against the dev account; skipped with an
+    # explicit notice when the secret is not configured (forks, PRs from
+    # outside). Job-level env is required: a step's own env map is not
+    # visible to its own `if` condition.
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name != 'pull_request'
+    env:
+      SNOWFLAKE_PAT: ${{ secrets.SNOWFLAKE_PAT }}
+      SNOWFLAKE_ENDPOINT: ${{ vars.SNOWFLAKE_ENDPOINT }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -90,10 +95,12 @@ jobs:
 
       - name: Live smoke suite
         if: env.SNOWFLAKE_PAT != ''
-        env:
-          SNOWFLAKE_PAT: ${{ secrets.SNOWFLAKE_PAT }}
-          SNOWFLAKE_ENDPOINT: ${{ vars.SNOWFLAKE_ENDPOINT }}
         run: python tests/smoke_test.py
+
+      - name: Live smoke skipped (no credential)
+        if: env.SNOWFLAKE_PAT == ''
+        run: |
+          echo "::notice title=Live smoke suite skipped::SNOWFLAKE_PAT secret is not configured - the live smoke suite did not run. Set the SNOWFLAKE_PAT repo secret (and optionally the SNOWFLAKE_ENDPOINT repo variable) to enable it. Credential-free coverage still ran via the mock-server integration suite."
 
   upstream-sync-check:
     # diff specifications/ against the upstream default branch and open an
