@@ -100,7 +100,7 @@ resources:
       - name: grantee_name
         value: "{{ analyst_role_name }}"
       - name: securable_type
-        value: databases
+        value: DATABASE
       - name: securable_name
         value: "{{ analytics_database_name }}"
       - name: privileges
@@ -112,7 +112,7 @@ resources:
       - name: grantee_name
         value: "{{ analyst_role_name }}"
       - name: securable_type
-        value: warehouses
+        value: WAREHOUSE
       - name: securable_name
         value: "{{ analyst_warehouse_name }}"
       - name: privileges

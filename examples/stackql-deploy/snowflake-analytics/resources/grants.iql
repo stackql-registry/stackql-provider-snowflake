@@ -8,7 +8,7 @@ privileges,
 endpoint
 )
 SELECT
-'roles',
+'role',
 '{{ grantee_name }}',
 '{{ securable_type }}',
 '{{ securable_name }}',
@@ -17,7 +17,7 @@ SELECT
 
 /*+ delete */
 DELETE FROM snowflake.grants.grants
-WHERE granteeType = 'roles'
+WHERE granteeType = 'role'
 AND granteeName = '{{ grantee_name }}'
 AND securableType = '{{ securable_type }}'
 AND securableName = '{{ securable_name }}'

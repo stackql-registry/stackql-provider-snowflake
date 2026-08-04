@@ -414,3 +414,6 @@ website/node_modules/
 website/build/
 website/.docusaurus/
 website/.shared-config/
+
+# integration test scratch registry (rewritten servers, recreated each run)
+tests/integration/.registry-tmp/

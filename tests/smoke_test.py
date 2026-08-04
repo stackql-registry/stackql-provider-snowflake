@@ -111,11 +111,15 @@ class Smoke:
                 import shlex
 
                 quoted = shlex.quote(full)
-            params = self.sq.local_query_executor.params
+            # pystackql moved the exec params between versions
+            executor = getattr(self.sq, "local_query_executor", None)
+            params = executor.params if executor is not None else self.sq.params
             for i, p in enumerate(params):
                 if p == "--registry":
                     params[i + 1] = quoted
                     break
+            else:
+                params.extend(["--registry", quoted])
         else:
             # public registry: the published snowflake provider
             self.sq = StackQL(output="dict")
@@ -270,18 +274,18 @@ class Smoke:
             "grant INSERT (USAGE on database to role)",
             f"INSERT INTO snowflake.grants.grants(granteeType, granteeName, securableType, "
             f"securableName, privileges, endpoint) "
-            f"SELECT 'roles', '{role}', 'databases', '{db}', '[\"USAGE\"]', '{ep}'",
+            f"SELECT 'role', '{role}', 'DATABASE', '{db}', '[\"USAGE\"]', '{ep}'",
         )
         self.step(
             "grant SELECT (audit the grant)",
-            f"SELECT * FROM snowflake.grants.grants WHERE granteeType = 'roles' "
+            f"SELECT * FROM snowflake.grants.grants WHERE granteeType = 'role' "
             f"AND granteeName = '{role}' AND {where}",
             expect_rows=True, contains="USAGE",
         )
         self.step(
             "grant DELETE (revoke)",
-            f"DELETE FROM snowflake.grants.grants WHERE granteeType = 'roles' "
-            f"AND granteeName = '{role}' AND securableType = 'databases' "
+            f"DELETE FROM snowflake.grants.grants WHERE granteeType = 'role' "
+            f"AND granteeName = '{role}' AND securableType = 'DATABASE' "
             f"AND securableName = '{db}' AND privilege = 'USAGE' AND {where}",
         )
 
