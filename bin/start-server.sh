@@ -3,6 +3,11 @@
 # Get current directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BASE_DIR="$( cd "$DIR/.." && pwd )"
+# On Git Bash / MSYS, the Windows stackql binary cannot resolve /c/... paths
+# in the registry file:// URL - use the mixed (c:/...) form
+if command -v cygpath > /dev/null 2>&1; then
+  BASE_DIR="$(cygpath -m "$BASE_DIR")"
+fi
 
 # Parse command line arguments
 PROVIDER=""
@@ -59,7 +64,7 @@ fi
 
 # If registry path not specified, use current directory
 if [ -z "$REG_PATH" ]; then
-  REG_PATH="$BASE_DIR/provider-dev/openapi/src"
+  REG_PATH="$BASE_DIR/provider-dev/openapi"
 fi
 
 echo "Using provider: $PROVIDER"
@@ -67,21 +72,30 @@ echo "Registry path: $REG_PATH"
 echo "Port: $PORT"
 echo "Verify signatures: $VERIFY"
 
-# Check if stackql binary exists
-if [ ! -f "$BASE_DIR/stackql" ]; then
+# Resolve the stackql binary: $STACKQL, ./stackql(.exe), PATH, else download
+STACKQL_BIN=""
+if [ -n "$STACKQL" ] && [ -f "$STACKQL" ]; then
+  STACKQL_BIN="$STACKQL"
+elif [ -f "$BASE_DIR/stackql" ]; then
+  STACKQL_BIN="$BASE_DIR/stackql"
+elif [ -f "$BASE_DIR/stackql.exe" ]; then
+  STACKQL_BIN="$BASE_DIR/stackql.exe"
+elif command -v stackql > /dev/null 2>&1; then
+  STACKQL_BIN="$(command -v stackql)"
+else
   echo "StackQL binary not found. Downloading..."
-  
+
   # Determine OS and architecture
   OS=$(uname -s | tr '[:upper:]' '[:lower:]')
   ARCH=$(uname -m)
-  
+
   # Map architecture to stackql naming
   if [ "$ARCH" = "x86_64" ]; then
     ARCH="amd64"
   elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
     ARCH="arm64"
   fi
-  
+
   # Set download URL based on OS
   if [ "$OS" = "darwin" ]; then
     DOWNLOAD_URL="https://releases.stackql.io/stackql/latest/stackql_darwin_${ARCH}.zip"
@@ -92,7 +106,7 @@ if [ ! -f "$BASE_DIR/stackql" ]; then
     echo "Please download stackql manually from https://github.com/stackql/stackql/releases"
     exit 1
   fi
-  
+
   # Download and extract
   cd "$BASE_DIR"
   curl -L -o stackql.zip "$DOWNLOAD_URL"
@@ -100,7 +114,9 @@ if [ ! -f "$BASE_DIR/stackql" ]; then
   rm stackql.zip
   chmod +x stackql
   echo "StackQL binary downloaded successfully"
+  STACKQL_BIN="$BASE_DIR/stackql"
 fi
+echo "Using stackql binary: $STACKQL_BIN"
 
 # Set registry configuration
 if [ "$VERIFY" = "true" ]; then
@@ -110,7 +126,7 @@ else
 fi
 
 # Check if server is already running
-if pgrep -f "stackql.*--pgsrv.port=${PORT}" > /dev/null; then
+if command -v pgrep > /dev/null 2>&1 && pgrep -f "stackql.*--pgsrv.port=${PORT}" > /dev/null; then
   echo "StackQL server is already running on port ${PORT}"
   exit 0
 fi
@@ -118,7 +134,7 @@ fi
 # Start the server
 echo "Starting StackQL server with registry: $REG"
 cd "$BASE_DIR"
-nohup ./stackql --registry="${REG}" --pgsrv.port="${PORT}" srv > stackql-server.log 2>&1 &
+nohup "$STACKQL_BIN" --registry="${REG}" --pgsrv.port="${PORT}" srv > stackql-server.log 2>&1 &
 SERVER_PID=$!
 
 # Check if server started successfully

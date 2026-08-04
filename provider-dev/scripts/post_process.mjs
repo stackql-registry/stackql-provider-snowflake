@@ -16,6 +16,13 @@
 //    reject it. Pushdown is an optimisation only: StackQL's client-side
 //    LIMIT remains authoritative.
 //
+// 2. Result retrieval schema binding. The vendor spec declares the
+//    fetchResult 200 response as `application/json: {}` (no schema), which
+//    projects as zero columns. The live payload is the same ResultSet shape
+//    returned by SubmitStatement (partition retrieval returns the next
+//    partition of the same result set), so the method response is bound to
+//    the ResultSet schema via schema_override.
+//
 // Usage: node provider-dev/scripts/post_process.mjs [--verbose]
 
 import fs from 'fs';
@@ -96,6 +103,23 @@ for (const filename of fs.readdirSync(servicesDir).filter((f) => f.endsWith('.ya
       pushdownInjected++;
       changed = true;
       if (verbose) console.log(`${filename}: ${resourceName}.${methodName} <- top pushdown (showLimit)`);
+    }
+  }
+
+  // fix 2: bind fetch_result to the ResultSet schema (sqlapi only)
+  if (filename === 'sqlapi.yaml') {
+    const fetchResult = resources.results?.methods?.fetch_result;
+    if (!fetchResult) {
+      errors.push('sqlapi.yaml: results.fetch_result method not found');
+    } else if (!doc.components?.schemas?.ResultSet) {
+      errors.push('sqlapi.yaml: ResultSet schema not found');
+    } else if (fetchResult.response?.schema_override?.$ref !== '#/components/schemas/ResultSet') {
+      fetchResult.response = {
+        ...(fetchResult.response || { mediaType: 'application/json', openAPIDocKey: '200' }),
+        schema_override: { $ref: '#/components/schemas/ResultSet' }
+      };
+      changed = true;
+      if (verbose) console.log('sqlapi.yaml: results.fetch_result <- ResultSet schema_override');
     }
   }
 

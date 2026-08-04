@@ -17,7 +17,24 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Find the process ID of the StackQL server on the specified port
+# Find the process ID of the StackQL server on the specified port. On Git
+# Bash / MSYS there is no pgrep and Windows processes are only visible via
+# `ps -W` - match on the image name and use taskkill.
+if ! command -v pgrep > /dev/null 2>&1; then
+  # WINPID is column 4; the command may show with or without .exe
+  WPIDS=$(ps -W | awk '$NF ~ /stackql(\.exe)?$/ {print $4}')
+  if [ -z "$WPIDS" ]; then
+    echo "No stackql server found running."
+  else
+    for WPID in $WPIDS; do
+      echo "Stopping stackql (Windows PID: $WPID)..."
+      taskkill //PID "$WPID" //F > /dev/null 2>&1
+    done
+    echo "StackQL server stopped successfully."
+  fi
+  exit 0
+fi
+
 PID=$(pgrep -f "stackql.*--pgsrv.port=${PORT}")
 
 if [ -z "$PID" ]; then
