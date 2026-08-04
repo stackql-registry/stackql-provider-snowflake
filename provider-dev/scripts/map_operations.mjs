@@ -84,10 +84,22 @@ function resolveRef(doc, node) {
 // ---------------------------------------------------------------------------
 
 const ops = new Map(); // `${filename}::${path}::${verb}` -> op info
+// per-file set of static path segments immediately followed by a {param}
+// segment anywhere in the spec - i.e. collections with addressable instances.
+// Used to attribute collection-level actions (/tables:as-select) to the
+// collection itself rather than to the preceding path segment.
+const collectionSegs = new Map();
 
 const specFiles = fs.readdirSync(sourceDir).filter((f) => f.endsWith('.yaml')).sort();
 for (const filename of specFiles) {
   const doc = yaml.load(fs.readFileSync(path.join(sourceDir, filename), 'utf8'));
+  collectionSegs.set(filename, new Set());
+  for (const pathKey of Object.keys(doc.paths || {})) {
+    const segs = pathKey.replace(/:[a-zA-Z_-]+$/, '').split('/').filter(Boolean);
+    for (let i = 0; i < segs.length - 1; i++) {
+      if (!segs[i].startsWith('{') && segs[i + 1].startsWith('{')) collectionSegs.get(filename).add(segs[i]);
+    }
+  }
   for (const [pathKey, pathItem] of Object.entries(doc.paths || {})) {
     const pathParams = (pathItem.parameters || []).map((p) => resolveRef(doc, p));
     for (const verb of HTTP_VERBS) {
@@ -114,6 +126,24 @@ for (const filename of specFiles) {
 // mapping rules
 // ---------------------------------------------------------------------------
 
+// role/database-role/user grant subresources stay in `roles` (see CLAUDE.md)
+// but need parent-prefixed resource names - the three parents share the same
+// subresource paths and required-parameter signatures, so an unprefixed
+// `grants` resource cannot disambiguate them. `:revoke` is a POST carrying a
+// request body (the privilege list), which StackQL DELETE cannot express, so
+// it maps to EXEC; the dedicated grants service keeps INSERT/DELETE symmetry.
+const GRANT_SUB_RE = /^\/api\/v2\/(roles|users|databases\/\{database_name\}\/database-roles)\/\{name\}\/(grants-of|grants-on|grants|future-grants)(:revoke)?$/;
+const GRANT_PARENTS = { roles: 'role', users: 'user', 'databases/{database_name}/database-roles': 'database_role' };
+
+function mapGrantSubresource(pathKey, verb, opId) {
+  const m = pathKey.match(GRANT_SUB_RE);
+  const resource = `${GRANT_PARENTS[m[1]]}_${m[2].replace(/-/g, '_')}`;
+  if (m[3]) return { resource, method: 'revoke', sqlVerb: 'exec', objectKey: '' };
+  if (verb === 'get') return { resource, method: 'list', sqlVerb: 'select', objectKey: `$.${deriveWrapperKey(opId) || 'items'}` };
+  if (verb === 'post') return { resource, method: 'grant', sqlVerb: 'insert', objectKey: '' };
+  return { error: `unhandled grant subresource operation ${verb} ${pathKey}` };
+}
+
 function mapGrantOperation(pathKey, verb) {
   const bulk = pathKey.includes('{bulkGrantType}');
   const grantOption = pathKey.endsWith('/grant-option');
@@ -123,6 +153,46 @@ function mapGrantOperation(pathKey, verb) {
   if (verb === 'delete') return { resource, method: 'revoke', sqlVerb: 'delete', objectKey: '' };
   return { error: `unhandled grant operation ${verb} ${pathKey}` };
 }
+
+// Cortex analyst/inference endpoints are RPC-style POSTs that do not fit the
+// path-derived rules - mapped explicitly. Prompt-submission endpoints map to
+// INSERT (INSERT ... RETURNING is the data plane vector, consistent with
+// sqlapi statements); suggestion/optimization helpers map to EXEC. The
+// vendor-spec SSE-only operations (fastGeneration, cortexLLMInferenceComplete)
+// are skipped by the streaming rule before this table is consulted.
+const CORTEX_MAP = {
+  sendFeedback: { resource: 'analyst_feedback', method: 'send_feedback', sqlVerb: 'insert', objectKey: '' },
+  sendMessage: { resource: 'analyst_messages', method: 'send_message', sqlVerb: 'insert', objectKey: '' },
+  generateVerifiedQuerySuggestions: { resource: 'analyst_verified_query_suggestions', method: 'generate', sqlVerb: 'exec', objectKey: '' },
+  preSelection: { resource: 'analyst_pre_selection', method: 'pre_select', sqlVerb: 'exec', objectKey: '' },
+  generateFiltersAndMetricsSuggestions: { resource: 'analyst_filters_and_metrics_suggestions', method: 'generate', sqlVerb: 'exec', objectKey: '' },
+  listAgenticOptimizations: { resource: 'analyst_agentic_optimizations', method: 'list_agentic_optimizations', sqlVerb: 'exec', objectKey: '' },
+  getAgenticOptimization: { resource: 'analyst_agentic_optimizations', method: 'get', sqlVerb: 'select', objectKey: '' },
+  getScopedToken: { resource: 'analyst_tokens', method: 'get_scoped_token', sqlVerb: 'select', objectKey: '' },
+  cortexGenericAnthropicMessages: { resource: 'messages', method: 'create', sqlVerb: 'insert', objectKey: '' },
+  cortexGenericOpenAIChatCompletions: { resource: 'chat_completions', method: 'create', sqlVerb: 'insert', objectKey: '' }
+};
+
+// deterministic renames for subresources whose path-derived name is ambiguous
+// inside a consolidated service (apps holds notebooks + streamlits + services;
+// a bare `logs` or `grants` resource would not say whose). Keyed by
+// filename -> path-derived resource name.
+const RESOURCE_RENAMES = {
+  'apps.yaml': {
+    logs: 'service_logs',
+    status: 'service_status',
+    containers: 'service_containers',
+    instances: 'service_instances',
+    roles: 'service_roles',
+    endpoints: 'service_endpoints',
+    grants: 'service_role_grants',
+    grants_of: 'service_role_grants_of'
+  },
+  'pipelines.yaml': {
+    files: 'stage_files',
+    dependents: 'task_dependents'
+  }
+};
 
 const SQLAPI_MAP = {
   SubmitStatement: { resource: 'statements', method: 'submit_statement', sqlVerb: 'insert', objectKey: '' },
@@ -140,7 +210,26 @@ function mapOperation(filename, pathKey, verb) {
     return { resource: 'skip_this_resource', method: '', sqlVerb: '', objectKey: '', skip: 'streaming_sse_only' };
   }
 
+  // vendor spec carries deprecated twin endpoints whose operationId ends in
+  // `Deprecated` and whose live replacement has an identical required-param
+  // signature (e.g. tasks/{name}/current_graphs vs current-graphs). Mapping
+  // both would break overloaded-verb routing, so the deprecated twin is
+  // skipped, not carried (a Breaking Changes item vs the published provider).
+  if (op.deprecated && /Deprecated$/.test(opId)) {
+    return { resource: 'skip_this_resource', method: '', sqlVerb: '', objectKey: '', skip: 'deprecated_twin_endpoint' };
+  }
+
   if (pathKey.startsWith('/api/v2/grants/')) return mapGrantOperation(pathKey, verb);
+  if (GRANT_SUB_RE.test(pathKey)) return mapGrantSubresource(pathKey, verb, opId);
+  if (pathKey.startsWith('/api/v2/cortex/') && CORTEX_MAP[opId]) return CORTEX_MAP[opId];
+
+  // task graph-run subresources read poorly as bare `current_graphs` /
+  // `complete_graphs` resources inside the pipelines service - prefix with
+  // the owning resource
+  const graphMatch = pathKey.match(/\/tasks\/\{name\}\/(current|complete)-graphs$/);
+  if (graphMatch && verb === 'get') {
+    return { resource: `task_${graphMatch[1]}_graphs`, method: 'list', sqlVerb: 'select', objectKey: `$.${deriveWrapperKey(opId) || 'items'}` };
+  }
   if (SQLAPI_MAP[opId] && (pathKey.startsWith('/api/v2/statements') || pathKey.startsWith('/api/v2/results'))) {
     return SQLAPI_MAP[opId];
   }
@@ -157,6 +246,11 @@ function mapOperation(filename, pathKey, verb) {
   if (actionMatch) {
     const action = snake(actionMatch[1]);
     const lastSeg = segments[segments.length - 1];
+    // action POSTed to a collection itself (/tables:as-select,
+    // /services:execute-job) - the collection is the resource
+    if (lastSeg && !lastSeg.startsWith('{') && collectionSegs.get(filename)?.has(lastSeg)) {
+      return { resource: snake(lastSeg), method: action, sqlVerb: 'exec', objectKey: '' };
+    }
     const hasSubresource = staticSegs.length > 1 && lastSeg && !lastSeg.startsWith('{');
     const resource = snake(hasSubresource ? staticSegs[staticSegs.length - 2] : staticSegs[staticSegs.length - 1]);
     const method = hasSubresource ? `${action}_${snake(lastSeg)}` : action;
@@ -248,6 +342,8 @@ for (const row of rows.slice(1)) {
     errors.push(`${filename} ${verb} ${pathKey}: ${m.error}`);
     continue;
   }
+  const rename = RESOURCE_RENAMES[filename]?.[m.resource];
+  if (rename) m.resource = rename;
   row[col.stackql_resource_name] = m.resource;
   if (m.resource === 'skip_this_resource') {
     row[col.stackql_method_name] = '';
