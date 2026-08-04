@@ -1,0 +1,119 @@
+version: 1
+name: snowflake_analytics
+description: >-
+  Example stackql-deploy stack for the refreshed snowflake provider - a
+  transient analytics database with a schema and events table, an X-Small
+  auto-suspend warehouse, an analyst role, and grants managed as data
+  (INSERT to grant, DELETE to revoke, SELECT to audit).
+providers:
+  - snowflake
+globals:
+  - name: endpoint
+    description: snowflake account identifier (orgname-accountname)
+    value: "{{ SNOWFLAKE_ENDPOINT }}"
+resources:
+  - name: analytics_database
+    file: databases.iql
+    props:
+      - name: database_name
+        value: "{{ stack_name | upper }}_{{ stack_env | upper }}"
+      - name: kind
+        value: TRANSIENT
+      - name: comment
+        value: "Analytics database for {{ stack_name }} {{ stack_env }}"
+      - name: data_retention_time_in_days
+        value: 1
+    exports:
+      - database_name: analytics_database_name
+
+  - name: raw_schema
+    file: schemas.iql
+    props:
+      - name: database_name
+        value: "{{ analytics_database_name }}"
+      - name: schema_name
+        value: RAW
+      - name: comment
+        value: "Raw landing schema"
+    exports:
+      - schema_name: raw_schema_name
+
+  - name: events_table
+    file: tables.iql
+    props:
+      - name: database_name
+        value: "{{ analytics_database_name }}"
+      - name: schema_name
+        value: "{{ raw_schema_name }}"
+      - name: table_name
+        value: EVENTS
+      - name: kind
+        value: PERMANENT
+      - name: comment
+        value: "Raw event stream"
+      - name: columns
+        value:
+          - name: EVENT_ID
+            datatype: VARCHAR(64)
+            nullable: false
+          - name: EVENT_TS
+            datatype: TIMESTAMP_NTZ
+            nullable: false
+          - name: PAYLOAD
+            datatype: VARIANT
+            nullable: true
+    exports:
+      - table_name: events_table_name
+
+  - name: analyst_warehouse
+    file: warehouses.iql
+    props:
+      - name: warehouse_name
+        value: "{{ stack_name | upper }}_{{ stack_env | upper }}_WH"
+      - name: warehouse_size
+        value: XSMALL
+      - name: auto_suspend
+        value: 60
+      - name: auto_resume
+        value: 'true'
+      - name: initially_suspended
+        value: 'true'
+      - name: comment
+        value: "Analyst warehouse for {{ stack_name }} {{ stack_env }}"
+    exports:
+      - warehouse_name: analyst_warehouse_name
+
+  - name: analyst_role
+    file: roles.iql
+    props:
+      - name: role_name
+        value: "{{ stack_name | upper }}_{{ stack_env | upper }}_ANALYST"
+      - name: comment
+        value: "Read-only analyst role"
+    exports:
+      - role_name: analyst_role_name
+
+  # grants as data: INSERT to grant, DELETE to revoke, SELECT to audit
+  - name: analyst_database_usage
+    file: grants.iql
+    props:
+      - name: grantee_name
+        value: "{{ analyst_role_name }}"
+      - name: securable_type
+        value: databases
+      - name: securable_name
+        value: "{{ analytics_database_name }}"
+      - name: privileges
+        value: ["USAGE"]
+
+  - name: analyst_warehouse_usage
+    file: grants.iql
+    props:
+      - name: grantee_name
+        value: "{{ analyst_role_name }}"
+      - name: securable_type
+        value: warehouses
+      - name: securable_name
+        value: "{{ analyst_warehouse_name }}"
+      - name: privileges
+        value: ["USAGE"]

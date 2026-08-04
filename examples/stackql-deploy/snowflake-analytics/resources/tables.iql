@@ -1,0 +1,57 @@
+/*+ exists */
+SELECT COUNT(*) as count
+FROM snowflake.tables.tables
+WHERE database_name = '{{ database_name }}'
+AND schema_name = '{{ schema_name }}'
+AND name = '{{ table_name }}'
+AND endpoint = '{{ endpoint }}';
+
+/*+ create */
+INSERT INTO snowflake.tables.tables (
+database_name,
+schema_name,
+name,
+kind,
+comment,
+columns,
+endpoint
+)
+SELECT
+'{{ database_name }}',
+'{{ schema_name }}',
+'{{ table_name }}',
+'{{ kind }}',
+'{{ comment }}',
+'{{ columns }}',
+'{{ endpoint }}';
+
+/*+ update */
+REPLACE snowflake.tables.tables
+SET
+name = '{{ table_name }}',
+kind = '{{ kind }}',
+comment = '{{ comment }}',
+columns = '{{ columns }}'
+WHERE database_name = '{{ database_name }}'
+AND schema_name = '{{ schema_name }}'
+AND name = '{{ table_name }}'
+AND endpoint = '{{ endpoint }}';
+
+/*+ statecheck, retries=3, retry_delay=3 */
+SELECT COUNT(*) as count
+FROM snowflake.tables.tables
+WHERE database_name = '{{ database_name }}'
+AND schema_name = '{{ schema_name }}'
+AND name = '{{ table_name }}'
+AND endpoint = '{{ endpoint }}'
+AND comment = '{{ comment }}';
+
+/*+ exports */
+SELECT '{{ table_name }}' as table_name;
+
+/*+ delete */
+DELETE FROM snowflake.tables.tables
+WHERE database_name = '{{ database_name }}'
+AND schema_name = '{{ schema_name }}'
+AND name = '{{ table_name }}'
+AND endpoint = '{{ endpoint }}';

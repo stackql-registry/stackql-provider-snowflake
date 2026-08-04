@@ -1,0 +1,45 @@
+/*+ exists */
+SELECT COUNT(*) as count
+FROM snowflake.databases.schemas
+WHERE database_name = '{{ database_name }}'
+AND name = '{{ schema_name }}'
+AND endpoint = '{{ endpoint }}';
+
+/*+ create */
+INSERT INTO snowflake.databases.schemas (
+database_name,
+name,
+comment,
+endpoint
+)
+SELECT
+'{{ database_name }}',
+'{{ schema_name }}',
+'{{ comment }}',
+'{{ endpoint }}';
+
+/*+ update */
+REPLACE snowflake.databases.schemas
+SET
+name = '{{ schema_name }}',
+comment = '{{ comment }}'
+WHERE database_name = '{{ database_name }}'
+AND name = '{{ schema_name }}'
+AND endpoint = '{{ endpoint }}';
+
+/*+ statecheck, retries=3, retry_delay=3 */
+SELECT COUNT(*) as count
+FROM snowflake.databases.schemas
+WHERE database_name = '{{ database_name }}'
+AND name = '{{ schema_name }}'
+AND endpoint = '{{ endpoint }}'
+AND comment = '{{ comment }}';
+
+/*+ exports */
+SELECT '{{ schema_name }}' as schema_name;
+
+/*+ delete */
+DELETE FROM snowflake.databases.schemas
+WHERE database_name = '{{ database_name }}'
+AND name = '{{ schema_name }}'
+AND endpoint = '{{ endpoint }}';
