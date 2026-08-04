@@ -4,7 +4,7 @@ Build repository for the refreshed `snowflake` provider for [StackQL](https://gi
 
 This repository is a fork of [snowflakedb/snowflake-rest-api-specs](https://github.com/snowflakedb/snowflake-rest-api-specs) - the vendor OpenAPI specs live in-repo under `specifications/` and stay current via upstream fork sync (the synced upstream commit is recorded in `provider-dev/config/spec_pin.json` at every build). The provider build scaffolding is added on top of the fork, following the repository pattern of [stackql-provider-k8s](https://github.com/stackql-registry/stackql-provider-k8s/tree/feature/provider-dev). The upstream fork's own readme is preserved as [README.upstream.md](README.upstream.md).
 
-Status: phase 1 - pre-processing, endpoint inventory, service split and pilot mapping (`databases`, `grants`, `sqlapi`) are complete. Normalize, provider generation, tests and docs follow in phase 2.
+Status: the full pipeline is built - 13 services, 75 resources, 303 operations generated from the pinned spec sync, with offline validation, meta-route, integration (mock server) and live smoke test layers, a Docusaurus docs microsite, and a `stackql-deploy` example stack. `make all` runs everything.
 
 ## Breaking Changes from the Original Provider
 
@@ -62,32 +62,56 @@ SELECT 'select count(*) from lineitem', 'TESTWH', 'TESTDB', 'TPCH_SF1', 'MYORG-M
 RETURNING statementHandle, resultSetMetaData, data;
 ```
 
+## Pagination and pushdown
+
+- Control-plane list endpoints declare RFC 5988 `Link` response headers; the generated provider carries a service-level `x-stackQL-config` pagination token (`link`/`header`) so a `SELECT` traverses all pages transparently.
+- `SELECT ... LIMIT n` is pushed to the wire as the `showLimit` query parameter on the 31 list methods whose operation declares it (injected per method by `post_process.mjs`; client-side `LIMIT` remains authoritative, so pushdown never changes results).
+- WHERE predicates that name a declared parameter (`like`, `fromName`, `history`, path params) are pushed into the request automatically by any-sdk's name-based parameter matching; all other predicates filter client-side.
+
 ## Build pipeline
 
-Deterministic, re-runnable steps; manual mapping decisions are rules in scripts, never hand-edits to CSVs or specs. `specifications/` is upstream fork content and is never modified.
+Deterministic, re-runnable steps; manual mapping decisions are rules in scripts, never hand-edits to CSVs or specs. `specifications/` is upstream fork content and is never modified. Every target is in the Makefile:
 
 ```bash
-npm install
-
-# 0. pre-process: inject common.yaml / common-cortex-*.yaml shared components,
-#    rename reserved-word path params, validate with swagger-parser,
-#    record the spec pin. Fails without writing on any error.
-npm run pre-process
-
-# endpoint inventory (provider-dev/config/endpoint_inventory.csv)
-npm run build-inventory
-
-# 1. split: regroup the pre-processed vendor specs into the 13 service specs
-#    per provider-dev/config/service_names.json
-npm run split -- --provider-name snowflake
-
-# 2. mappings: analyze to all_services.csv, then populate the stackql_* columns
-npm run generate-mappings -- --provider-name snowflake --input-dir provider-dev/source --output-dir provider-dev/config
-npm run map-operations                      # add -- --services a,b,c to scope
-
-# 3-4. normalize + generate (phase 2)
-# 5. test (phase 2): offline validation, meta-routes, integration (mock server), smoke (pystackql)
+make deps            # npm install
+make build           # pre-process -> split -> pre-normalize -> mappings -> normalize -> generate
+make test            # offline validation + integration (mock server) + meta-routes
+make smoke           # live smoke suite, locally generated provider (needs SNOWFLAKE_PAT)
+make smoke-live      # live smoke suite against the latest published provider
+make docs            # generate website docs from the generated provider
+make website         # build the docusaurus microsite
+make all             # everything above except the live smokes
 ```
+
+The individual steps, for scoping or debugging:
+
+```bash
+npm run pre-process     # inject shared components, rename reserved-word path params,
+                        # validate with swagger-parser, record the spec pin
+npm run build-inventory # endpoint inventory (provider-dev/config/endpoint_inventory.csv)
+npm run split -- --provider-name snowflake --overwrite
+npm run pre-normalize   # snowflake-specific adjustments (operationId dedupe after the merge)
+npm run generate-mappings -- --provider-name snowflake --input-dir provider-dev/source --output-dir provider-dev/config
+npm run map-operations  # add -- --services a,b,c to scope
+npm run normalize -- --api-dir provider-dev/source
+make generate           # generate-provider with servers/auth/pagination config + post-process
+```
+
+## Testing
+
+Four layers, cheapest first; run the first three after every regeneration:
+
+```bash
+node tests/offline_validation.mjs      # SHOW/DESCRIBE assertions, no network
+npm run test-integration               # row-level + wire-level assertions against a
+                                       # mock Snowflake REST server (auth, pagination,
+                                       # lifecycle, grants round trip, statements)
+make test-meta                         # meta-route suite against a local stackql server
+python tests/smoke_test.py             # live account, locally generated provider
+python tests/smoke_test.py --live      # live account, latest published provider
+```
+
+The smoke suite needs `SNOWFLAKE_PAT` (env var or `.env`) and the account identifier via `--endpoint`/`SNOWFLAKE_ENDPOINT` (`orgname-accountname` - find it with `SELECT CURRENT_ORGANIZATION_NAME() || '-' || CURRENT_ACCOUNT_NAME();`). All created objects use `STACKQL_SMOKE_<stamp>` names, the warehouse is X-Small with 60s auto-suspend, and prior-run breadcrumbs are swept first - a full run costs well under $1 in credits. Never point it at a production account.
 
 ## Repository layout
 
@@ -97,13 +121,15 @@ collections/           # upstream Postman collections - retained for fork sync h
 provider-dev/
   source/              # pre-processed + split per-service specs (build artifacts, regenerated)
   config/              # spec_pin.json, service_names.json, endpoint_inventory.csv, all_services.csv
-  scripts/             # pre_process.mjs, record_spec_pin.mjs, build_inventory.mjs, map_operations.mjs
-  openapi/src/snowflake/      # generated provider output (phase 2)
-  docgen/provider-data/       # docs landing page content (phase 2)
+  scripts/             # pre_process.mjs, pre_normalize.mjs, map_operations.mjs, post_process.mjs, ...
+  openapi/src/snowflake/      # generated provider output
+  docgen/provider-data/       # docs landing page content (headerContent1/2.txt)
 bin/                   # thin node/shell wrappers for npm scripts (mirrors stackql-provider-k8s)
-tests/                 # integration (mock server) + smoke (pystackql) suites (phase 2)
-website/               # Docusaurus microsite (phase 2)
-NOTES.md               # phase 1 open questions, evidence and decisions
+tests/                 # offline validation, integration (mock server), smoke (pystackql)
+website/               # Docusaurus 3.10 microsite (vendored shared config)
+examples/stackql-deploy/    # declarative example stack (database, warehouse, role, grants)
+Makefile               # make all = pipeline + tests + docs + site
+NOTES.md               # open questions, evidence and decisions
 ```
 
 ## Deviations from the reference pattern

@@ -1,5 +1,16 @@
 # CLAUDE.md
 
+## Current state
+
+The full pipeline is built and green: 13 services, 75 resources, 303 operations (99 SELECT, 50 INSERT, 43 DELETE, 11 REPLACE, 100 EXEC, 12 skipped with reasons). `make all` runs pipeline -> tests -> docs -> site. Key facts that differ from or refine the original plan below:
+
+- Pipeline order is pre-process -> split -> **pre-normalize** -> generate-mappings -> map-operations -> normalize -> generate -> post-process. `pre_normalize.mjs` runs BEFORE mapping because it renames duplicate operationIds created by the service merge (grant subresources in roles, search-service feedback in cortex) and both the wrapper-key derivation and the CSV depend on the final ids. `all_services.csv` is fully derived - regenerate it from scratch (delete + analyze + map-operations) rather than letting analyze append to a stale copy.
+- LIMIT pushdown (`top` -> `showLimit`) is injected per method by `post_process.mjs` on exactly the 31 list methods that declare the parameter - NOT via `--service-config`, because any-sdk applies the pushdown parameter unconditionally and most list endpoints reject unknown params. Pagination (Link header token) IS uniform service-level config via `--service-config`.
+- any-sdk facts that shaped the config (verified in source): `requestBodyTranslate` is method-level only (no inheritance); pagination request/response tokens are broken at provider level (use service/resource/method); `queryParamPushdown` inherits whole-block, first non-nil wins; views only work as `resource.config.views.select`.
+- `post_process.mjs` also binds `sqlapi.results.fetch_result` to the ResultSet schema (vendor spec declares an empty response schema).
+- The smoke suite (`tests/smoke_test.py`) defaults to the dev account `MGBHLAO-CY92030` (AWS_AP_SOUTHEAST_2); `--live` switches to the latest published provider from the public registry. Grant INSERT columns: `granteeType, granteeName, securableType, securableName` (path params) + `privileges` (JSON array body column); revoke DELETE uses singular `privilege`.
+- The stackql binary resolution in bin/*.sh and tests: `$STACKQL` -> `./stackql(.exe)` -> PATH. On this Windows machine it is at `C:\Program Files (x86)\StackQL\stackql`; server scripts handle MSYS (cygpath for registry URLs, ps -W/taskkill for process management).
+
 ## Project
 
 This repository builds and documents the refreshed `snowflake` provider for [StackQL](https://github.com/stackql/stackql), enabling SQL-based query and provisioning operations against the Snowflake REST APIs - the full control plane (accounts, databases, schemas, tables, views, warehouses, roles, database roles, users, grants, network policies, compute pools, services, stages, pipes, streams, tasks, tags, integrations, dynamic/event/Iceberg tables, notebooks, Streamlit apps, secrets, alerts), the SQL API data plane (statement submission and results), and the Cortex AI surface (inference, analyst, search).
