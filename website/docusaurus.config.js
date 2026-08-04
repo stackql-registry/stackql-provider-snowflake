@@ -19,7 +19,7 @@ const config = createConfig({
 // point at that subdirectory (the shared config default omits the website/ path).
 config.projectName = 'stackql-provider-snowflake';
 config.presets[0][1].docs.editUrl =
-  'https://github.com/stackql-registry/stackql-provider-snowflake/edit/main/website/';
+  'https://github.com/stackql-registry/stackql-provider-snowflake/edit/stackql-provider/website/';
 
 // Use the locally vendored registry-branded logos (STACKQL>> | REGISTRY) instead
 // of the shared config's hotlinked main-site wordmark - self-contained assets, no

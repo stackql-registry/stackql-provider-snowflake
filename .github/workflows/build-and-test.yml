@@ -2,10 +2,10 @@ name: build-and-test
 
 on:
   push:
-    branches: [main, stackql-provider, 'feature/**']
+    branches: [stackql-provider, 'feature/**']
     paths-ignore: ['website/**']
   pull_request:
-    branches: [main, stackql-provider]
+    branches: [stackql-provider]
     paths-ignore: ['website/**']
   workflow_dispatch:
 
