@@ -21,6 +21,15 @@ export function recordSpecPin() {
   const git = (...gitArgs) =>
     execFileSync('git', ['-C', repoRoot, ...gitArgs], { encoding: 'utf8' }).trim();
 
+  // In a shallow clone the only commit in history is HEAD, which git treats
+  // as touching every path (no parent to diff against) - `git log -1 --
+  // specifications` then resolves to HEAD instead of the true sync commit
+  // and the pin silently records garbage. Fail loudly instead (CI must
+  // check out with fetch-depth: 0).
+  if (git('rev-parse', '--is-shallow-repository') === 'true') {
+    throw new Error('shallow git history - the spec pin cannot be derived; clone/checkout with full history (fetch-depth: 0)');
+  }
+
   const commit = git('log', '-1', '--format=%H', '--', 'specifications');
   const commitDate = git('log', '-1', '--format=%cI', '--', 'specifications');
   const subject = git('log', '-1', '--format=%s', '--', 'specifications');

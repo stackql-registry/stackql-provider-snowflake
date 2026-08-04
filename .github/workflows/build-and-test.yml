@@ -14,6 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # full history: the spec pin is derived from git log on
+          # specifications/ and a shallow clone resolves it to HEAD
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -64,6 +68,8 @@ jobs:
     if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -93,6 +99,9 @@ jobs:
     # diff specifications/ against the upstream default branch and open an
     # issue when drift appears (the fork is synced manually, never silently)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
