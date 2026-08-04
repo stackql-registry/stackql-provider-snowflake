@@ -160,19 +160,17 @@ AND endpoint = 'myorg-myaccount';
 
 ## Data plane: submit a statement
 
-Statement submission is an `INSERT` with a `RETURNING` clause - inventory the control plane and query the data inside it in the same session. `"User-Agent"` is a required header carried as a column; its hyphenated wire name is addressed with double quotes:
+Statement submission is an `INSERT` with a `RETURNING` clause - inventory the control plane and query the data inside it in the same session:
 
 ```sql
 INSERT INTO snowflake.sqlapi.statements (
   statement,
   warehouse,
-  "User-Agent",
   endpoint
 )
 SELECT
   'SELECT count(*) FROM lineitem',
   'REPORTING_WH',
-  'stackql/1.0',
   'myorg-myaccount'
 RETURNING statement_handle, result_set_meta_data, data;
 ```

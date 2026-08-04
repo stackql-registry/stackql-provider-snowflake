@@ -311,8 +311,8 @@ class Smoke:
         # data plane: one statement, seconds of XS compute
         self.step(
             "statement submission (INSERT ... RETURNING)",
-            f"INSERT INTO snowflake.sqlapi.statements(statement, warehouse, \"User-Agent\", endpoint) "
-            f"SELECT 'SELECT 1 AS SMOKE_CHECK', '{wh}', 'stackql-smoke', '{ep}' "
+            f"INSERT INTO snowflake.sqlapi.statements(statement, warehouse, endpoint) "
+            f"SELECT 'SELECT 1 AS SMOKE_CHECK', '{wh}', '{ep}' "
             f"RETURNING statement_handle, data",
             expect_rows=True,
         )

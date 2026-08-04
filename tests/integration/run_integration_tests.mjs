@@ -233,8 +233,9 @@ try {
   }
 
   // --- SQL API: statement submission (INSERT ... RETURNING) - the
-  // "User-Agent" quoted column supplies the required header parameter
-  r = await runSql(`INSERT INTO snowflake.sqlapi.statements(statement, warehouse, "User-Agent") SELECT 'select id, name from customers', 'WH1', 'stackql-integration/1.0' RETURNING statement_handle, data`);
+  // header plumbing (User-Agent etc) is stripped at pre-normalize; the Go
+  // client supplies a default User-Agent on the wire
+  r = await runSql(`INSERT INTO snowflake.sqlapi.statements(statement, warehouse) SELECT 'select id, name from customers', 'WH1' RETURNING statement_handle, data`);
   check('statement INSERT RETURNING yields statement_handle',
     r.rows && r.rows.length === 1 && JSON.stringify(r.rows[0]).includes(STATEMENT_HANDLE),
     r.err || JSON.stringify(r.rows));
@@ -242,10 +243,10 @@ try {
     r.rows && JSON.stringify(r.rows[0]).includes('customer1'),
     r.err || JSON.stringify(r.rows));
   const stmtPost = log.filter((e) => e.method === 'POST' && e.path === '/api/v2/statements');
-  check('statement POST carried body + User-Agent header',
+  check('statement POST carried body + a default User-Agent header',
     stmtPost.length === 1 && stmtPost[0].body?.statement?.includes('customers')
       && stmtPost[0].body?.warehouse === 'WH1'
-      && stmtPost[0].headers['user-agent'] === 'stackql-integration/1.0',
+      && stmtPost[0].headers['user-agent'].length > 0,
     JSON.stringify(stmtPost.map((c) => ({ body: c.body, ua: c.headers['user-agent'] }))));
 
   // --- SQL API: multi-partition result retrieval (page is the query param;

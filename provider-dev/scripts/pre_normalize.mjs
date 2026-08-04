@@ -129,6 +129,51 @@ for (const [filename, pathMap] of Object.entries(OPID_RENAMES)) {
 }
 
 // ---------------------------------------------------------------------------
+// Header plumbing removal. The SQL API operations declare `User-Agent`
+// (required), `Accept` and `X-Snowflake-Authorization-Token-Type` (optional)
+// header parameters, which surface as SQL columns - `User-Agent` as a
+// REQUIRED one. None is user-relevant:
+//   - the service rejects only an ABSENT/EMPTY User-Agent (verified live:
+//     391903 with no UA, success with any client default) and stackql's Go
+//     HTTP client always sends one;
+//   - Accept is plain content negotiation;
+//   - X-Snowflake-Authorization-Token-Type selects the bearer token type and
+//     is only needed for KEYPAIR_JWT - v1 auth is PAT (the OAuth default).
+//     Re-surface or default it if key-pair JWT auth is added.
+// ---------------------------------------------------------------------------
+
+const STRIP_HEADER_PARAMS = new Set(['User-Agent', 'Accept', 'X-Snowflake-Authorization-Token-Type']);
+{
+  let strippedCount = 0;
+  for (const [filename, entry] of docs) {
+    const doc = entry.doc;
+    const resolveP = (p) => {
+      if (p && typeof p.$ref === 'string' && p.$ref.startsWith('#/')) {
+        let t = doc;
+        for (const seg of p.$ref.slice(2).split('/')) t = t?.[seg];
+        return t;
+      }
+      return p;
+    };
+    for (const pathItem of Object.values(doc.paths || {})) {
+      for (const holder of [pathItem, ...HTTP_VERBS.map((v) => pathItem[v]).filter(Boolean)]) {
+        if (!Array.isArray(holder.parameters)) continue;
+        const before = holder.parameters.length;
+        holder.parameters = holder.parameters.filter((p) => {
+          const r = resolveP(p);
+          return !(r?.in === 'header' && STRIP_HEADER_PARAMS.has(r?.name));
+        });
+        if (holder.parameters.length !== before) {
+          strippedCount += before - holder.parameters.length;
+          entry.changed = true;
+        }
+      }
+    }
+  }
+  if (verbose && strippedCount) console.log(`stripped ${strippedCount} header parameter reference(s) (${[...STRIP_HEADER_PARAMS].join(', ')})`);
+}
+
+// ---------------------------------------------------------------------------
 // Cortex generic endpoint typing. The vendor spec declares the Anthropic- and
 // OpenAI-compatible endpoints (/api/v2/cortex/v1/messages, /api/v2/cortex/v1/
 // chat/completions) as opaque passthroughs ({type: object,

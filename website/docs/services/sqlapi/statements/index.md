@@ -119,22 +119,22 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#get_statement_status"><CopyableCode code="get_statement_status" /></a></td>
     <td><CopyableCode code="select" /></td>
-    <td><a href="#parameter-statement_handle"><code>statement_handle</code></a>, <a href="#parameter-User-Agent"><code>User-Agent</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
-    <td><a href="#parameter-requestId"><code>requestId</code></a>, <a href="#parameter-partition"><code>partition</code></a>, <a href="#parameter-Accept"><code>Accept</code></a>, <a href="#parameter-X-Snowflake-Authorization-Token-Type"><code>X-Snowflake-Authorization-Token-Type</code></a></td>
+    <td><a href="#parameter-statement_handle"><code>statement_handle</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-requestId"><code>requestId</code></a>, <a href="#parameter-partition"><code>partition</code></a></td>
     <td>Checks the status of the execution of the statement with the specified statement handle. If the statement was executed successfully, the operation returns the requested partition of the result set.</td>
 </tr>
 <tr>
     <td><a href="#submit_statement"><CopyableCode code="submit_statement" /></a></td>
     <td><CopyableCode code="insert" /></td>
-    <td><a href="#parameter-User-Agent"><code>User-Agent</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
-    <td><a href="#parameter-requestId"><code>requestId</code></a>, <a href="#parameter-async"><code>async</code></a>, <a href="#parameter-nullable"><code>nullable</code></a>, <a href="#parameter-Accept"><code>Accept</code></a>, <a href="#parameter-X-Snowflake-Authorization-Token-Type"><code>X-Snowflake-Authorization-Token-Type</code></a></td>
+    <td><a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-requestId"><code>requestId</code></a>, <a href="#parameter-async"><code>async</code></a>, <a href="#parameter-nullable"><code>nullable</code></a></td>
     <td>Submits one or more statements for execution. You can specify that the statement should be executed asynchronously.</td>
 </tr>
 <tr>
     <td><a href="#cancel_statement"><CopyableCode code="cancel_statement" /></a></td>
     <td><CopyableCode code="delete" /></td>
-    <td><a href="#parameter-statement_handle"><code>statement_handle</code></a>, <a href="#parameter-User-Agent"><code>User-Agent</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
-    <td><a href="#parameter-requestId"><code>requestId</code></a>, <a href="#parameter-Accept"><code>Accept</code></a>, <a href="#parameter-X-Snowflake-Authorization-Token-Type"><code>X-Snowflake-Authorization-Token-Type</code></a></td>
+    <td><a href="#parameter-statement_handle"><code>statement_handle</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-requestId"><code>requestId</code></a></td>
     <td>Cancels the execution of the statement with the specified statement handle.</td>
 </tr>
 </tbody>
@@ -153,11 +153,6 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     </tr>
 </thead>
 <tbody>
-<tr id="parameter-User-Agent">
-    <td><CopyableCode code="User-Agent" /></td>
-    <td><code>string</code></td>
-    <td>Set this to the name and version of your application (e.g. “applicationName/applicationVersion”). You must use a value that complies with RFC 7231.</td>
-</tr>
 <tr id="parameter-endpoint">
     <td><CopyableCode code="endpoint" /></td>
     <td><code>string</code></td>
@@ -167,16 +162,6 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><CopyableCode code="statement_handle" /></td>
     <td><code>string (uuid)</code></td>
     <td>The handle of the statement that you want to use (e.g. to fetch the result set or cancel execution).</td>
-</tr>
-<tr id="parameter-Accept">
-    <td><CopyableCode code="Accept" /></td>
-    <td><code>string</code></td>
-    <td>The response payload format. The schema should be specified in resultSetMetaData in the request payload.</td>
-</tr>
-<tr id="parameter-X-Snowflake-Authorization-Token-Type">
-    <td><CopyableCode code="X-Snowflake-Authorization-Token-Type" /></td>
-    <td><code>string</code></td>
-    <td>Specify the authorization token type for the Authorization header. KEYPAIR_JWT is for Keypair JWT or OAUTH for oAuth token. If not specified, OAUTH is assumed.</td>
 </tr>
 <tr id="parameter-async">
     <td><CopyableCode code="async" /></td>
@@ -226,12 +211,9 @@ statementStatusUrl,
 stats
 FROM snowflake.sqlapi.statements
 WHERE statement_handle = '{{ statement_handle }}' -- required
-AND "User-Agent" = '{{ User-Agent }}' -- required
 AND endpoint = '{{ endpoint }}' -- required
 AND requestId = '{{ requestId }}'
 AND partition = '{{ partition }}'
-AND Accept = '{{ Accept }}'
-AND "X-Snowflake-Authorization-Token-Type" = '{{ X-Snowflake-Authorization-Token-Type }}'
 ;
 ```
 </TabItem>
@@ -261,13 +243,10 @@ warehouse,
 role,
 bindings,
 parameters,
-"User-Agent",
 endpoint,
 requestId,
 async,
-nullable,
-Accept,
-"X-Snowflake-Authorization-Token-Type"
+nullable
 )
 SELECT 
 '{{ statement }}',
@@ -278,13 +257,10 @@ SELECT
 '{{ role }}',
 '{{ bindings }}',
 '{{ parameters }}',
-'{{ User-Agent }}',
 '{{ endpoint }}',
 '{{ requestId }}',
 '{{ async }}',
-'{{ nullable }}',
-'{{ Accept }}',
-'{{ X-Snowflake-Authorization-Token-Type }}'
+'{{ nullable }}'
 RETURNING
 code,
 createdOn,
@@ -303,9 +279,6 @@ stats
 <CodeBlock language="yaml">{`# Description fields are for documentation purposes
 - name: statements
   props:
-    - name: User-Agent
-      value: "{{ User-Agent }}"
-      description: Required parameter for the statements resource.
     - name: endpoint
       value: "{{ endpoint }}"
       description: Required parameter for the statements resource.
@@ -363,14 +336,6 @@ stats
       value: {{ nullable }}
       description: Set to true to execute the statement to generate the result set including null. If the parameter is set to false, the result set value null will be replaced with a string 'null'.
       description: Set to true to execute the statement to generate the result set including null. If the parameter is set to false, the result set value null will be replaced with a string 'null'.
-    - name: Accept
-      value: "{{ Accept }}"
-      description: The response payload format. The schema should be specified in resultSetMetaData in the request payload.
-      description: The response payload format. The schema should be specified in resultSetMetaData in the request payload.
-    - name: X-Snowflake-Authorization-Token-Type
-      value: "{{ X-Snowflake-Authorization-Token-Type }}"
-      description: Specify the authorization token type for the Authorization header. KEYPAIR_JWT is for Keypair JWT or OAUTH for oAuth token. If not specified, OAUTH is assumed.
-      description: Specify the authorization token type for the Authorization header. KEYPAIR_JWT is for Keypair JWT or OAUTH for oAuth token. If not specified, OAUTH is assumed.
 `}</CodeBlock>
 
 </TabItem>
@@ -392,11 +357,8 @@ Cancels the execution of the statement with the specified statement handle.
 ```sql
 DELETE FROM snowflake.sqlapi.statements
 WHERE statement_handle = '{{ statement_handle }}' --required
-AND "User-Agent" = '{{ User-Agent }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND requestId = '{{ requestId }}'
-AND Accept = '{{ Accept }}'
-AND "X-Snowflake-Authorization-Token-Type" = '{{ X-Snowflake-Authorization-Token-Type }}'
 ;
 ```
 </TabItem>
