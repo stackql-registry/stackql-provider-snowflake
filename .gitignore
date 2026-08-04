@@ -417,3 +417,6 @@ website/.shared-config/
 
 # integration test scratch registry (rewritten servers, recreated each run)
 tests/integration/.registry-tmp/
+
+# the upstream kernel-module pattern (*.mod*) must not swallow CSS modules
+!website/src/**/*.module.css
