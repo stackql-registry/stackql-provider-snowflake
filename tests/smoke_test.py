@@ -62,6 +62,9 @@ ERROR_RE = re.compile(
 # error-text fragments indicating a KNOWN environment/core limitation
 XFAIL_PATTERNS = {
     "router-host": re.compile(r"FindRoute|no matching operation", re.I),
+    # stackql v0.10.582 panics on EXEC of non-GET snowflake methods (nil
+    # wrappedSchema in GenerateSelectDML) - core defect, tracked upstream
+    "exec-panic": re.compile(r"panic|GenerateSelectDML|invalid memory address", re.I),
 }
 
 
@@ -233,7 +236,7 @@ class Smoke:
         self.step(
             "database REPLACE (create-or-alter)",
             f"REPLACE snowflake.databases.databases SET name = '{db}', kind = 'TRANSIENT', "
-            f"comment = 'stackql smoke updated' WHERE name = '{db}' AND {where}",
+            f"comment = 'stackql smoke updated' WHERE database_name = '{db}' AND {where}",
         )
         self.step(
             "database comment updated",

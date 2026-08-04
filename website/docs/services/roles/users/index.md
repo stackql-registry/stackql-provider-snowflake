@@ -512,7 +512,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#create_or_alter"><CopyableCode code="create_or_alter" /></a></td>
     <td><CopyableCode code="replace" /></td>
-    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
+    <td><a href="#parameter-user_name"><code>user_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
     <td></td>
     <td>Create a (or alter an existing) user. Even if the operation is just an alter, the full property set must be provided. Note that password is not currently altered by this operation but is supported for a newly-created object.</td>
 </tr>
@@ -546,6 +546,11 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 </tr>
 <tr id="parameter-name">
     <td><CopyableCode code="name" /></td>
+    <td><code>string</code></td>
+    <td>Identifier (i.e. name) for the resource.</td>
+</tr>
+<tr id="parameter-user_name">
+    <td><CopyableCode code="user_name" /></td>
     <td><code>string</code></td>
     <td>Identifier (i.e. name) for the resource.</td>
 </tr>
@@ -924,7 +929,7 @@ type = '{{ type }}',
 enable_unredacted_query_syntax_error = {{ enable_unredacted_query_syntax_error }},
 network_policy = '{{ network_policy }}'
 WHERE 
-name = '{{ name }}' --required
+user_name = '{{ user_name }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND name = '{{ name }}' --required
 RETURNING

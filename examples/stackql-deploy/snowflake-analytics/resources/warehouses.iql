@@ -31,7 +31,7 @@ warehouse_size = '{{ warehouse_size }}',
 auto_suspend = {{ auto_suspend }},
 auto_resume = '{{ auto_resume }}',
 comment = '{{ comment }}'
-WHERE name = '{{ warehouse_name }}'
+WHERE warehouse_name = '{{ warehouse_name }}'
 AND endpoint = '{{ endpoint }}';
 
 /*+ statecheck, retries=3, retry_delay=3 */

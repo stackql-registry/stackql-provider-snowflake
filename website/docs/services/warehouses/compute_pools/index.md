@@ -372,7 +372,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#create_or_alter"><CopyableCode code="create_or_alter" /></a></td>
     <td><CopyableCode code="replace" /></td>
-    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-instance_family"><code>instance_family</code></a>, <a href="#parameter-min_nodes"><code>min_nodes</code></a>, <a href="#parameter-max_nodes"><code>max_nodes</code></a></td>
+    <td><a href="#parameter-compute_pool_name"><code>compute_pool_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-instance_family"><code>instance_family</code></a>, <a href="#parameter-min_nodes"><code>min_nodes</code></a>, <a href="#parameter-max_nodes"><code>max_nodes</code></a></td>
     <td></td>
     <td>Create a (or alter an existing) compute pool. Even if the operation is just an alter, the full property set must be provided.</td>
 </tr>
@@ -420,6 +420,11 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     </tr>
 </thead>
 <tbody>
+<tr id="parameter-compute_pool_name">
+    <td><CopyableCode code="compute_pool_name" /></td>
+    <td><code>string</code></td>
+    <td>Identifier (i.e. name) for the resource.</td>
+</tr>
 <tr id="parameter-endpoint">
     <td><CopyableCode code="endpoint" /></td>
     <td><code>string</code></td>
@@ -668,7 +673,7 @@ auto_resume = {{ auto_resume }},
 comment = '{{ comment }}',
 auto_suspend_secs = {{ auto_suspend_secs }}
 WHERE 
-name = '{{ name }}' --required
+compute_pool_name = '{{ compute_pool_name }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND name = '{{ name }}' --required
 AND instance_family = '{{ instance_family }}' --required

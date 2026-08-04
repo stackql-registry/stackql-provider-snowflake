@@ -19,6 +19,16 @@
 // or if any duplicate operationIds remain after renaming (catches upstream
 // drift on spec syncs).
 //
+// Additionally, every createOrAlter PUT operation is moved onto its own path
+// entry with the terminal `{name}` parameter renamed to `{<singular>_name}`
+// (PUT /api/v2/databases/{name} -> PUT /api/v2/databases/{database_name}).
+// Rationale: the create-or-alter request body REQUIRES `name` (verified live -
+// omitting it 400s), but any-sdk routes a SQL column matching a declared
+// parameter to that parameter, so with a shared `{name}` path param the body
+// name is serialized empty and the API rejects the call. With the rename,
+// `REPLACE ... SET name = 'X' ... WHERE database_name = 'X'` sends both.
+// The wire URL is unchanged - only the template variable name differs.
+//
 // Usage: node provider-dev/scripts/pre_normalize.mjs [--verbose]
 
 import fs from 'fs';
@@ -115,6 +125,70 @@ for (const [filename, pathMap] of Object.entries(OPID_RENAMES)) {
       entry.changed = true;
       if (verbose) console.log(`${filename}: ${oldId} -> ${newId} (${verb.toUpperCase()} ${pathKey})`);
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// createOrAlter PUT path split (see header)
+// ---------------------------------------------------------------------------
+
+function singularize(seg) {
+  const s = seg.replace(/-/g, '_');
+  if (s.endsWith('ies')) return s.slice(0, -3) + 'y';
+  if (s.endsWith('s')) return s.slice(0, -1);
+  return s;
+}
+
+function resolveParamRef(doc, node) {
+  if (node && typeof node.$ref === 'string' && node.$ref.startsWith('#/')) {
+    let target = doc;
+    for (const seg of node.$ref.slice(2).split('/')) target = target?.[seg];
+    return target;
+  }
+  return node;
+}
+
+for (const [filename, { doc }] of docs) {
+  const entry = docs.get(filename);
+  for (const [pathKey, pathItem] of Object.entries(doc.paths || {})) {
+    const put = pathItem.put;
+    if (!put || !/^createOrAlter/i.test(put.operationId || '')) continue;
+    const segs = pathKey.split('/');
+    if (segs[segs.length - 1] !== '{name}') {
+      errors.push(`${filename}: createOrAlter PUT ${pathKey} does not end in {name} - extend the rename rule`);
+      continue;
+    }
+    const collection = segs[segs.length - 2];
+    const newParam = `${singularize(collection)}_name`;
+    const newPathKey = [...segs.slice(0, -1), `{${newParam}}`].join('/');
+    if (doc.paths[newPathKey] && !doc.paths[newPathKey].put) {
+      errors.push(`${filename}: split target path ${newPathKey} already exists`);
+      continue;
+    }
+    if (doc.paths[newPathKey]?.put) continue; // idempotent re-run
+
+    // rename the terminal `name` path param wherever it is declared -
+    // path level and/or on the PUT operation itself (the vendor specs use
+    // $refs to a shared components.parameters.name at both levels)
+    let renamed = 0;
+    const renameIn = (params) => (params || []).map((p) => {
+      const resolved = resolveParamRef(doc, p);
+      if (resolved?.name === 'name' && resolved?.in === 'path') {
+        renamed++;
+        return { ...JSON.parse(JSON.stringify(resolved)), name: newParam };
+      }
+      return p;
+    });
+    const newPathParams = renameIn(pathItem.parameters);
+    const newPut = { ...put, parameters: renameIn(put.parameters) };
+    if (renamed === 0) {
+      errors.push(`${filename}: createOrAlter PUT ${pathKey} declares no \`name\` path parameter at either level`);
+      continue;
+    }
+    doc.paths[newPathKey] = { parameters: newPathParams, put: newPut };
+    delete pathItem.put;
+    entry.changed = true;
+    if (verbose) console.log(`${filename}: PUT ${pathKey} -> ${newPathKey} ({name} -> {${newParam}})`);
   }
 }
 

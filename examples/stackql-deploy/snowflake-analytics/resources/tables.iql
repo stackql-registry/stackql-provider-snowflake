@@ -34,7 +34,7 @@ comment = '{{ comment }}',
 columns = '{{ columns }}'
 WHERE database_name = '{{ database_name }}'
 AND schema_name = '{{ schema_name }}'
-AND name = '{{ table_name }}'
+AND table_name = '{{ table_name }}'
 AND endpoint = '{{ endpoint }}';
 
 /*+ statecheck, retries=3, retry_delay=3 */

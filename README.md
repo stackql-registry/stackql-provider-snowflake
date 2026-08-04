@@ -13,6 +13,7 @@ This rebuild is a breaking change relative to the published `snowflake` provider
 - Service names consolidate from 36 singular per-spec services to 13 plural service groups: `snowflake.database.databases` -> `snowflake.databases.databases`, `snowflake.schema.schemas` -> `snowflake.databases.schemas`, `snowflake.warehouse.*` -> `snowflake.warehouses.*`, and so on. The full mapping of vendor spec to service is recorded in `provider-dev/config/service_names.json`.
 - Grants move to a dedicated `grants` service with verb-shaped methods: `snowflake.grant.privileges.grant_privilege` -> `INSERT INTO snowflake.grants.grants`, `revoke_privilege` -> `DELETE FROM snowflake.grants.grants`, `grants_to.list_grants_to` -> `SELECT FROM snowflake.grants.grants`. Bulk (ALL/FUTURE) grants and grant-option revocations are their own resources (`group_grants`, `grant_options`, `group_grant_options`) so every overloaded SQL verb keeps a unique required-parameter signature.
 - Method names are resource-scoped: `list_databases`/`fetch_database`/`create_database`/`delete_database` become `list`/`get`/`create`/`delete` on `databases.databases`. `create_or_alter_*` PUT operations remain mapped to `REPLACE` as `create_or_alter`.
+- `REPLACE` (create-or-alter) statements address the target with a `<singular>_name` WHERE parameter (`WHERE database_name = 'X'`, `WHERE warehouse_name = 'X'`) while `SET name = 'X'` populates the request body - the create-or-alter body requires `name` and any-sdk routes a SQL column matching a declared path parameter to the path, so the PUT path parameter is renamed at pre-normalize (wire URL unchanged; see NOTES.md).
 - Request body columns move from `data__` prefixed (`data__name`) to native wire property names (`name`, `accounts`) via the naive request body translator, consistent with the `k8s`, `aws` and `azure` providers.
 - List responses gain object keys: bare-array list responses are wrapped at normalize time and each list method carries the matching `stackql_object_key` (`$.databases`, `$.schemas`, `$.grants_to`).
 - The required `User-Agent` header parameter no longer surfaces as a required query column (stripped/defaulted in pre-normalization; in the published provider it is a required parameter on every method).
@@ -42,7 +43,7 @@ SELECT name, owner FROM snowflake.databases.databases WHERE endpoint = 'MYORG-MY
 | GET collection | `SELECT` | `<resource>.list` |
 | GET single | `SELECT` | `<resource>.get` |
 | POST create | `INSERT` | `<resource>.create` |
-| PUT create-or-alter | `REPLACE` | `<resource>.create_or_alter` |
+| PUT create-or-alter | `REPLACE` | `<resource>.create_or_alter` - `SET name = 'X' ... WHERE <singular>_name = 'X'` |
 | DELETE | `DELETE` | `<resource>.delete` |
 | POST actions (`:resume`, `:suspend`, `:execute`, `:abort`, `:refresh`, `:clone`, `:undrop`, ...) | `EXEC` | `<resource>.<action>` (subresource actions compose, e.g. `databases.enable_replication`) |
 | grant privilege | `INSERT` | `grants.grants.grant`, `grants.group_grants.grant` |
@@ -64,9 +65,10 @@ RETURNING statementHandle, resultSetMetaData, data;
 
 ## Pagination and pushdown
 
-- Control-plane list endpoints declare RFC 5988 `Link` response headers; the generated provider carries a service-level `x-stackQL-config` pagination token (`link`/`header`) so a `SELECT` traverses all pages transparently.
+- No pagination config is shipped. The vendor specs declare RFC 5988 `Link` response headers on list endpoints, but the live control plane does not emit them (verified against a real account), and the current any-sdk release (stackql v0.10.582) hangs when a header response token is configured without a request token. List reads are single-call; the full findings and re-evaluation criteria are in [NOTES.md](NOTES.md).
 - `SELECT ... LIMIT n` is pushed to the wire as the `showLimit` query parameter on the 31 list methods whose operation declares it (injected per method by `post_process.mjs`; client-side `LIMIT` remains authoritative, so pushdown never changes results).
-- WHERE predicates that name a declared parameter (`like`, `fromName`, `history`, path params) are pushed into the request automatically by any-sdk's name-based parameter matching; all other predicates filter client-side.
+- WHERE predicates that name a declared parameter (`like`, `fromName`, `history`, path params) are pushed into the request automatically by any-sdk's name-based parameter matching; all other predicates filter client-side. `WHERE fromName = '...'` with `LIMIT` gives explicit windowed reads where needed.
+- Known toolchain defect: `EXEC` of non-GET methods panics stackql v0.10.582 (see NOTES.md section 1b) - the 100 mapped `EXEC` actions are correct in the provider docs and the test suites SKIP/XFAIL on the panic signature until a fixed binary ships.
 
 ## Build pipeline
 

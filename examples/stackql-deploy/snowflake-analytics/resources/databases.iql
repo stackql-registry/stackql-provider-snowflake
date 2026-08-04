@@ -26,7 +26,7 @@ name = '{{ database_name }}',
 kind = '{{ kind }}',
 comment = '{{ comment }}',
 data_retention_time_in_days = {{ data_retention_time_in_days }}
-WHERE name = '{{ database_name }}'
+WHERE database_name = '{{ database_name }}'
 AND endpoint = '{{ endpoint }}';
 
 /*+ statecheck, retries=3, retry_delay=3 */

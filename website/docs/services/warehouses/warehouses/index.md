@@ -492,7 +492,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#create_or_alter"><CopyableCode code="create_or_alter" /></a></td>
     <td><CopyableCode code="replace" /></td>
-    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
+    <td><a href="#parameter-warehouse_name"><code>warehouse_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
     <td></td>
     <td>Create a (or alter an existing) warehouse. Even if the operation is just an alter, the full property set must be provided.</td>
 </tr>
@@ -575,6 +575,11 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 </tr>
 <tr id="parameter-name">
     <td><CopyableCode code="name" /></td>
+    <td><code>string</code></td>
+    <td>Identifier (i.e. name) for the resource.</td>
+</tr>
+<tr id="parameter-warehouse_name">
+    <td><CopyableCode code="warehouse_name" /></td>
     <td><code>string</code></td>
     <td>Identifier (i.e. name) for the resource.</td>
 </tr>
@@ -919,7 +924,7 @@ size = '{{ size }}',
 warehouse_credit_limit = {{ warehouse_credit_limit }},
 target_statement_size = '{{ target_statement_size }}'
 WHERE 
-name = '{{ name }}' --required
+warehouse_name = '{{ warehouse_name }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND name = '{{ name }}' --required
 RETURNING

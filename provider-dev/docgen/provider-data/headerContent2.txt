@@ -109,7 +109,7 @@ SET
   auto_suspend = 60,
   auto_resume = 'true',
   comment = 'reporting warehouse, managed by stackql'
-WHERE name = 'REPORTING_WH'
+WHERE warehouse_name = 'REPORTING_WH'
 AND endpoint = 'myorg-myaccount';
 ```
 

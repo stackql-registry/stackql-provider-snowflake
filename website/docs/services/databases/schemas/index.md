@@ -362,7 +362,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#create_or_alter"><CopyableCode code="create_or_alter" /></a></td>
     <td><CopyableCode code="replace" /></td>
-    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
+    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a></td>
     <td><a href="#parameter-kind"><code>kind</code></a></td>
     <td>Creates a new, or alters an existing, schema. You must provide the full schema definition even when altering an existing schema.</td>
 </tr>
@@ -415,6 +415,11 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 </tr>
 <tr id="parameter-name">
     <td><CopyableCode code="name" /></td>
+    <td><code>string</code></td>
+    <td>Identifier (i.e. name) for the resource.</td>
+</tr>
+<tr id="parameter-schema_name">
+    <td><CopyableCode code="schema_name" /></td>
     <td><code>string</code></td>
     <td>Identifier (i.e. name) for the resource.</td>
 </tr>
@@ -743,7 +748,7 @@ serverless_task_min_statement_size = '{{ serverless_task_min_statement_size }}',
 serverless_task_max_statement_size = '{{ serverless_task_max_statement_size }}'
 WHERE 
 database_name = '{{ database_name }}' --required
-AND name = '{{ name }}' --required
+AND schema_name = '{{ schema_name }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND name = '{{ name }}' --required
 AND kind = '{{ kind}}'

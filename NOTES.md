@@ -38,6 +38,41 @@ improvement, not a regression.
 **Open:** live verification of the `Link` header format and of whether the
 control-plane actually emits it (specs declare it; emission unconfirmed).
 
+**RESOLVED (2026-08-04, build): no pagination config is shipped.** Two live
+findings closed this out:
+
+1. The live control plane does NOT emit `Link` headers. Verified with curl
+   against `GET /api/v2/databases` on a real account (MGBHLAO-CY92030):
+   200, bare JSON array, no `Link` header at all - the specs declare the
+   header but the service does not send it.
+2. any-sdk (stackql v0.10.582) deadlocks when a header `responseToken` is
+   configured without a `requestToken` - every list SELECT hangs after the
+   first response, Link header present or not. Reproduced live and against
+   the mock (tests/integration). Adding a `requestToken` unblocks the loop
+   but any-sdk then passes the ENTIRE next-page URL as the request token
+   query parameter - wrong semantics against the real API. The proper fix
+   (URL substitution in `defaultLinkHeaderTransformer`'s consumer) belongs
+   in any-sdk; both defects should be filed upstream.
+
+Posture: single-call list reads, with `showLimit`/`fromName` available as
+ordinary pushdown parameters and `LIMIT n -> showLimit` per-method pushdown
+(post_process.mjs). The integration runner fails if a pagination config
+reappears in the generated output. Re-evaluate when any-sdk ships fixes.
+
+## 1b. EXEC of non-GET methods panics stackql v0.10.582
+
+`EXEC snowflake.warehouses.warehouses.resume @name = 'WH1' ...` (and every
+EXEC over a POST/PUT/DELETE-backed snowflake method) crashes the binary with
+a nil-pointer in any-sdk `formulation.(*wrappedSchema).GetType` via
+`drm.GenerateSelectDML`, during analysis before any wire call. EXEC of
+GET-backed methods works, and EXEC of non-GET methods works in the k8s
+provider with the same binary - a snowflake-doc x binary interaction.
+Inlining the `200SuccessResponse` response $ref did not help. Tracked as a
+toolchain defect: the integration suite SKIPs its two EXEC checks on the
+panic signature (asserts normally once a fixed binary lands) and the smoke
+suite XFAILs on it. The mapped EXEC surface (100 actions) is correct in the
+provider docs; only the current binary blocks execution.
+
 ## 2. SubmitStatement mapping - decision: INSERT ... RETURNING
 
 Recommendation: candidate (a), `INSERT INTO snowflake.sqlapi.statements(...)

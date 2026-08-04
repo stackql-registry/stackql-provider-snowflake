@@ -15,7 +15,11 @@ PROVIDER := snowflake
 SERVICES_DIR := provider-dev/openapi/src/$(PROVIDER)
 SERVERS := [{"url": "https://{endpoint}.snowflakecomputing.com", "variables": {"endpoint": {"default": "orgname-accountname", "description": "Organization and account identifier (orgname-accountname)"}}}]
 PROVIDER_CONFIG := {"auth": {"type": "bearer", "credentialsenvvar": "SNOWFLAKE_PAT"}}
-SERVICE_CONFIG := {"pagination": {"responseToken": {"key": "link", "location": "header"}}}
+# NOTE: no pagination config is shipped. The vendor specs declare RFC 5988
+# Link headers on list responses, but the live control plane does not emit
+# them (verified against a real account), and any-sdk (stackql v0.10.582)
+# hangs when a header responseToken is configured without a requestToken.
+# Re-evaluate on the next any-sdk release - see NOTES.md.
 
 .PHONY: help deps pre-process split pre-normalize mappings normalize generate post-process build \
         test-offline test-meta test-integration test smoke smoke-live docs website website-start clean all
@@ -51,7 +55,6 @@ generate: ## generate the provider with pagination + naive request body translat
 	  --config-path provider-dev/config/all_services.csv \
 	  --servers '$(SERVERS)' \
 	  --provider-config '$(PROVIDER_CONFIG)' \
-	  --service-config '$(SERVICE_CONFIG)' \
 	  --naive-req-body-translate \
 	  --overwrite
 	npm run post-process

@@ -402,7 +402,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#create_or_alter"><CopyableCode code="create_or_alter" /></a></td>
     <td><CopyableCode code="replace" /></td>
-    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-definition"><code>definition</code></a></td>
+    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-task_name"><code>task_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-definition"><code>definition</code></a></td>
     <td></td>
     <td>Create a (or alter an existing) task. Even if the operation is just an alter, the full property set must be provided.</td>
 </tr>
@@ -469,6 +469,11 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><CopyableCode code="schema_name" /></td>
     <td><code>string</code></td>
     <td>Identifier (i.e. name) for the schema to which the resource belongs. You can use the `/api/v2/databases/&#123;database&#125;/schemas` GET request to get a list of available schemas for the specified database.</td>
+</tr>
+<tr id="parameter-task_name">
+    <td><CopyableCode code="task_name" /></td>
+    <td><code>string</code></td>
+    <td>Identifier (i.e. name) for the resource.</td>
 </tr>
 <tr id="parameter-asyncExec">
     <td><CopyableCode code="asyncExec" /></td>
@@ -829,7 +834,7 @@ error_integration = '{{ error_integration }}'
 WHERE 
 database_name = '{{ database_name }}' --required
 AND schema_name = '{{ schema_name }}' --required
-AND name = '{{ name }}' --required
+AND task_name = '{{ task_name }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND name = '{{ name }}' --required
 AND definition = '{{ definition }}' --required

@@ -182,7 +182,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#create_or_alter"><CopyableCode code="create_or_alter" /></a></td>
     <td><CopyableCode code="replace" /></td>
-    <td><a href="#parameter-name"><code>name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-api_hook"><code>api_hook</code></a>, <a href="#parameter-api_allowed_prefixes"><code>api_allowed_prefixes</code></a>, <a href="#parameter-enabled"><code>enabled</code></a></td>
+    <td><a href="#parameter-api_integration_name"><code>api_integration_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-api_hook"><code>api_hook</code></a>, <a href="#parameter-api_allowed_prefixes"><code>api_allowed_prefixes</code></a>, <a href="#parameter-enabled"><code>enabled</code></a></td>
     <td></td>
     <td>Create an (or alter an existing) API integration. Note that API_KEY is not currently altered by this operation and is supported for a newly-created object only. Unsetting API_BLOCKED_PREFIXES is also unsupported.</td>
 </tr>
@@ -209,6 +209,11 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     </tr>
 </thead>
 <tbody>
+<tr id="parameter-api_integration_name">
+    <td><CopyableCode code="api_integration_name" /></td>
+    <td><code>string</code></td>
+    <td>Identifier (i.e. name) for the resource.</td>
+</tr>
 <tr id="parameter-endpoint">
     <td><CopyableCode code="endpoint" /></td>
     <td><code>string</code></td>
@@ -390,7 +395,7 @@ api_blocked_prefixes = '{{ api_blocked_prefixes }}',
 enabled = {{ enabled }},
 comment = '{{ comment }}'
 WHERE 
-name = '{{ name }}' --required
+api_integration_name = '{{ api_integration_name }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND name = '{{ name }}' --required
 AND api_hook = '{{ api_hook }}' --required
