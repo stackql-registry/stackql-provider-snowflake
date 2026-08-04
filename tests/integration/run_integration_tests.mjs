@@ -255,6 +255,17 @@ try {
     r.rows && r.rows.length === 1 && JSON.stringify(r.rows[0]).includes('customer3') && JSON.stringify(r.rows[0]).includes('customer4'),
     r.err || JSON.stringify(r.rows));
 
+  // --- Cortex inference: SELECT-over-POST, WHERE members feed the JSON body
+  mark = log.length;
+  r = await runSql(`SELECT model, choices FROM snowflake.cortex.chat_completions WHERE model = 'test-model' AND messages = '[{"role": "user", "content": "hi"}]'`);
+  check('cortex chat completion SELECT-over-POST returns a row',
+    r.rows && r.rows.length === 1 && JSON.stringify(r.rows[0]).includes('MOCK_COMPLETION'),
+    r.err || JSON.stringify(r.rows).slice(0, 200));
+  const ccCalls = log.slice(mark).filter((e) => e.path === '/api/v2/cortex/v1/chat/completions' && e.method === 'POST');
+  check('completion request body carried model + messages',
+    ccCalls.length === 1 && ccCalls[0].body?.model === 'test-model' && Array.isArray(ccCalls[0].body?.messages),
+    JSON.stringify(ccCalls.map((c) => c.body)));
+
   // --- auth wiring: every request carried Bearer <SNOWFLAKE_PAT>
   check('auth: all requests carried Bearer token (0 auth failures)',
     log.length > 0 && state.authFailures === 0,

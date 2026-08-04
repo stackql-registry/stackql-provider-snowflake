@@ -23,6 +23,13 @@
 //    partition of the same result set), so the method response is bound to
 //    the ResultSet schema via schema_override.
 //
+// 3. Request binding for SELECT-over-POST methods. The generator emits
+//    `request: {mediaType}` only for insert/replace methods; a select-mapped
+//    POST (the cortex inference endpoints) is left without a request
+//    component, and any-sdk sends an empty body for such methods. Bind the
+//    JSON request on every select method whose operation carries a JSON
+//    request body - matching the anthropic/gemini provider wiring.
+//
 // Usage: node provider-dev/scripts/post_process.mjs [--verbose]
 
 import fs from 'fs';
@@ -64,6 +71,7 @@ function opDeclaresQueryParam(doc, pathItem, op, name) {
 const errors = [];
 let pushdownInjected = 0;
 let pushdownAlready = 0;
+let requestBound = 0;
 const written = [];
 
 for (const filename of fs.readdirSync(servicesDir).filter((f) => f.endsWith('.yaml')).sort()) {
@@ -104,6 +112,19 @@ for (const filename of fs.readdirSync(servicesDir).filter((f) => f.endsWith('.ya
       changed = true;
       if (verbose) console.log(`${filename}: ${resourceName}.${methodName} <- top pushdown (showLimit)`);
     }
+
+    // fix 3: bind the JSON request on select-over-POST methods
+    for (const [methodName, method] of Object.entries(resource.methods || {})) {
+      if (!selectRefs.has(methodName) || method.request) continue;
+      const opRef = method?.operation?.$ref;
+      if (!opRef || !opRef.endsWith('/post')) continue;
+      const op = operationFromMethodRef(doc, method);
+      if (!op?.requestBody?.content?.['application/json']) continue;
+      method.request = { mediaType: 'application/json' };
+      requestBound++;
+      changed = true;
+      if (verbose) console.log(`${filename}: ${resourceName}.${methodName} <- request binding (select-over-POST)`);
+    }
   }
 
   // fix 2: bind fetch_result to the ResultSet schema (sqlapi only)
@@ -135,4 +156,4 @@ if (errors.length > 0) {
 for (const { filePath, doc } of written) {
   fs.writeFileSync(filePath, yaml.dump(doc, { lineWidth: -1, noRefs: true }));
 }
-console.log(`post_process: LIMIT pushdown on ${pushdownInjected + pushdownAlready} method(s) (${pushdownInjected} injected, ${pushdownAlready} already present), ${written.length} file(s) written`);
+console.log(`post_process: LIMIT pushdown on ${pushdownInjected + pushdownAlready} method(s) (${pushdownInjected} injected, ${pushdownAlready} already present), ${requestBound} select-over-POST request binding(s), ${written.length} file(s) written`);

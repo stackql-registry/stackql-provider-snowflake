@@ -273,6 +273,17 @@ async function handle(req, res, state, log, ctx) {
     return send(res, 200, SUCCESS);
   }
 
+  // --- Cortex: OpenAI-compatible chat completions (SELECT-over-POST)
+  if (p === '/api/v2/cortex/v1/chat/completions' && m === 'POST') {
+    const b = entry.body || {};
+    if (!b.model || !b.messages) return errorResponse(res, 400, 'model and messages are required');
+    return send(res, 200, {
+      id: 'chatcmpl-mock', object: 'chat.completion', created: 1700000000, model: b.model,
+      choices: [{ index: 0, message: { role: 'assistant', content: 'MOCK_COMPLETION' }, finish_reason: 'stop' }],
+      usage: { prompt_tokens: 10, completion_tokens: 2, total_tokens: 12 }
+    });
+  }
+
   // --- SQL API: submit statement -> ResultSet (partition 0 inline)
   if (p === '/api/v2/statements' && m === 'POST') {
     const b = entry.body || {};

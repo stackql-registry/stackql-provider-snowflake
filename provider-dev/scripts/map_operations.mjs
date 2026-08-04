@@ -155,22 +155,26 @@ function mapGrantOperation(pathKey, verb) {
 }
 
 // Cortex analyst/inference endpoints are RPC-style POSTs that do not fit the
-// path-derived rules - mapped explicitly. Prompt-submission endpoints map to
-// INSERT (INSERT ... RETURNING is the data plane vector, consistent with
-// sqlapi statements); suggestion/optimization helpers map to EXEC. The
-// vendor-spec SSE-only operations (fastGeneration, cortexLLMInferenceComplete)
-// are skipped by the streaming rule before this table is consulted.
+// path-derived rules - mapped explicitly. Inference endpoints (analyst
+// message, Anthropic-compatible messages, OpenAI-compatible chat completions)
+// map to SELECT-over-POST - WHERE-supplied members feed the request body and
+// the response projects as columns, matching the anthropic and gemini
+// provider patterns (anthropic messages.create, gemini content.
+// generate_content). Feedback submission stays INSERT (it creates a record);
+// suggestion/optimization helpers map to EXEC. The vendor-spec SSE-only
+// operations (fastGeneration, cortexLLMInferenceComplete) are skipped by the
+// streaming rule before this table is consulted.
 const CORTEX_MAP = {
   sendFeedback: { resource: 'analyst_feedback', method: 'send_feedback', sqlVerb: 'insert', objectKey: '' },
-  sendMessage: { resource: 'analyst_messages', method: 'send_message', sqlVerb: 'insert', objectKey: '' },
+  sendMessage: { resource: 'analyst_messages', method: 'send_message', sqlVerb: 'select', objectKey: '' },
   generateVerifiedQuerySuggestions: { resource: 'analyst_verified_query_suggestions', method: 'generate', sqlVerb: 'exec', objectKey: '' },
   preSelection: { resource: 'analyst_pre_selection', method: 'pre_select', sqlVerb: 'exec', objectKey: '' },
   generateFiltersAndMetricsSuggestions: { resource: 'analyst_filters_and_metrics_suggestions', method: 'generate', sqlVerb: 'exec', objectKey: '' },
   listAgenticOptimizations: { resource: 'analyst_agentic_optimizations', method: 'list_agentic_optimizations', sqlVerb: 'exec', objectKey: '' },
   getAgenticOptimization: { resource: 'analyst_agentic_optimizations', method: 'get', sqlVerb: 'select', objectKey: '' },
   getScopedToken: { resource: 'analyst_tokens', method: 'get_scoped_token', sqlVerb: 'select', objectKey: '' },
-  cortexGenericAnthropicMessages: { resource: 'messages', method: 'create', sqlVerb: 'insert', objectKey: '' },
-  cortexGenericOpenAIChatCompletions: { resource: 'chat_completions', method: 'create', sqlVerb: 'insert', objectKey: '' }
+  cortexGenericAnthropicMessages: { resource: 'messages', method: 'create', sqlVerb: 'select', objectKey: '' },
+  cortexGenericOpenAIChatCompletions: { resource: 'chat_completions', method: 'create', sqlVerb: 'select', objectKey: '' }
 };
 
 // deterministic renames for subresources whose path-derived name is ambiguous

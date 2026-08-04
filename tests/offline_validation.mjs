@@ -87,6 +87,13 @@ check('DESCRIBE role_grants has columns', r.rows.length > 3, `got ${r.rows.lengt
 r = await runSql('DESCRIBE EXTENDED snowflake.sqlapi.results');
 check('DESCRIBE sqlapi.results has columns (ResultSet binding)', r.rows.length > 3, `got ${r.rows.length}`);
 
+r = await runSql('SHOW METHODS IN snowflake.cortex.chat_completions');
+const cverbs = Object.fromEntries(r.rows.map((m) => [m.MethodName, m.SQLVerb]));
+check('cortex chat_completions.create is SELECT (inference via SELECT-over-POST)', cverbs.create === 'SELECT', JSON.stringify(cverbs));
+
+r = await runSql('DESCRIBE EXTENDED snowflake.cortex.chat_completions');
+check('DESCRIBE cortex chat_completions has typed columns', r.rows.length > 4, `got ${r.rows.length}`);
+
 r = await runSql('SHOW METHODS IN snowflake.warehouses.warehouses');
 const wnames = r.rows.map((m) => m.MethodName);
 check('warehouses has resume/suspend EXEC actions', wnames.includes('resume') && wnames.includes('suspend'), wnames.join(','));

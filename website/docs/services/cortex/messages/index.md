@@ -32,8 +32,67 @@ Creates, updates, deletes, gets or lists a <code>messages</code> resource.
 
 The following fields are returned by `SELECT` queries:
 
-`SELECT` not supported for this resource, use `SHOW METHODS` to view available operations for the resource.
+<Tabs
+    defaultValue="create"
+    values={[
+        { label: 'create', value: 'create' }
+    ]}
+>
+<TabItem value="create">
 
+<table>
+<thead>
+    <tr>
+    <th>Name</th>
+    <th>Datatype</th>
+    <th>Description</th>
+    </tr>
+</thead>
+<tbody>
+<tr>
+    <td><CopyableCode code="id" /></td>
+    <td><code>string</code></td>
+    <td>Unique message identifier.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="content" /></td>
+    <td><code>array</code></td>
+    <td>Generated content blocks.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="model" /></td>
+    <td><code>string</code></td>
+    <td>Model that handled the request.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="role" /></td>
+    <td><code>string</code></td>
+    <td>Conversational role of the generated message (assistant).</td>
+</tr>
+<tr>
+    <td><CopyableCode code="stop_reason" /></td>
+    <td><code>string</code></td>
+    <td>Reason generation stopped.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="stop_sequence" /></td>
+    <td><code>string</code></td>
+    <td>Which custom stop sequence was generated, if any.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="type" /></td>
+    <td><code>string</code></td>
+    <td>Object type (message).</td>
+</tr>
+<tr>
+    <td><CopyableCode code="usage" /></td>
+    <td><code>string</code></td>
+    <td>Billing and rate-limit token usage. (opaque JSON object)</td>
+</tr>
+</tbody>
+</table>
+</TabItem>
+</Tabs>
 
 ## Methods
 
@@ -52,7 +111,7 @@ The following methods are available for this resource:
 <tbody>
 <tr>
     <td><a href="#create"><CopyableCode code="create" /></a></td>
-    <td><CopyableCode code="insert" /></td>
+    <td><CopyableCode code="select" /></td>
     <td><a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td></td>
     <td>Perform LLM text completion inference using Cortex Messages API format.</td>
@@ -81,13 +140,12 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 </tbody>
 </table>
 
-## `INSERT` examples
+## `SELECT` examples
 
 <Tabs
     defaultValue="create"
     values={[
-        { label: 'create', value: 'create' },
-        { label: 'Manifest', value: 'manifest' }
+        { label: 'create', value: 'create' }
     ]}
 >
 <TabItem value="create">
@@ -95,23 +153,18 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 Perform LLM text completion inference using Cortex Messages API format.
 
 ```sql
-INSERT INTO snowflake.cortex.messages (
-endpoint
-)
-SELECT 
-'{{ endpoint }}'
+SELECT
+id,
+content,
+model,
+role,
+stop_reason,
+stop_sequence,
+type,
+usage
+FROM snowflake.cortex.messages
+WHERE endpoint = '{{ endpoint }}' -- required
 ;
 ```
-</TabItem>
-<TabItem value="manifest">
-
-<CodeBlock language="yaml">{`# Description fields are for documentation purposes
-- name: messages
-  props:
-    - name: endpoint
-      value: "{{ endpoint }}"
-      description: Required parameter for the messages resource.
-`}</CodeBlock>
-
 </TabItem>
 </Tabs>

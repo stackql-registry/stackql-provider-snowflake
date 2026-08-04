@@ -129,6 +129,131 @@ for (const [filename, pathMap] of Object.entries(OPID_RENAMES)) {
 }
 
 // ---------------------------------------------------------------------------
+// Cortex generic endpoint typing. The vendor spec declares the Anthropic- and
+// OpenAI-compatible endpoints (/api/v2/cortex/v1/messages, /api/v2/cortex/v1/
+// chat/completions) as opaque passthroughs ({type: object,
+// additionalProperties: true}) for BOTH request and response - which leaves
+// the SQL surface with no IO contract at all: no insertable/selectable
+// columns, nothing for the naive body translator to match. These endpoints
+// proxy the published Anthropic Messages and OpenAI Chat Completions wire
+// contracts, so minimal typed schemas for the JSON (non-streaming) mode are
+// injected here; `stream` defaults false - SSE mode is out of scope, as with
+// every prior build's streaming exclusions.
+// ---------------------------------------------------------------------------
+
+const CORTEX_GENERIC_SCHEMAS = {
+  CortexAnthropicMessagesRequest: {
+    type: 'object',
+    description: 'Anthropic Messages API compatible request (JSON mode).',
+    required: ['model', 'messages', 'max_tokens'],
+    properties: {
+      model: { type: 'string', description: 'Model that will complete the prompt.' },
+      messages: { type: 'array', description: 'Input messages.', items: { type: 'object' } },
+      max_tokens: { type: 'integer', description: 'Maximum number of tokens to generate.' },
+      system: { type: 'string', description: 'System prompt.' },
+      temperature: { type: 'number', description: 'Amount of randomness injected into the response.' },
+      top_p: { type: 'number', description: 'Nucleus sampling threshold.' },
+      top_k: { type: 'integer', description: 'Only sample from the top K options for each token.' },
+      stop_sequences: { type: 'array', description: 'Custom sequences that will stop generation.', items: { type: 'string' } },
+      stream: { type: 'boolean', description: 'Must be false or omitted - streaming (SSE) responses are out of scope.', default: false },
+      tools: { type: 'array', description: 'Definitions of tools the model may use.', items: { type: 'object' } },
+      tool_choice: { type: 'object', description: 'How the model should use the provided tools.' }
+    }
+  },
+  CortexAnthropicMessagesResponse: {
+    type: 'object',
+    description: 'Anthropic Messages API compatible response.',
+    properties: {
+      id: { type: 'string', description: 'Unique message identifier.' },
+      type: { type: 'string', description: 'Object type (message).' },
+      role: { type: 'string', description: 'Conversational role of the generated message (assistant).' },
+      model: { type: 'string', description: 'Model that handled the request.' },
+      content: { type: 'array', description: 'Generated content blocks.', items: { type: 'object' } },
+      stop_reason: { type: 'string', description: 'Reason generation stopped.' },
+      stop_sequence: { type: 'string', description: 'Which custom stop sequence was generated, if any.' },
+      usage: { type: 'object', description: 'Billing and rate-limit token usage.' }
+    }
+  },
+  CortexOpenAIChatCompletionsRequest: {
+    type: 'object',
+    description: 'OpenAI Chat Completions API compatible request (JSON mode).',
+    required: ['model', 'messages'],
+    properties: {
+      model: { type: 'string', description: 'Model to use for the completion.' },
+      messages: { type: 'array', description: 'Messages comprising the conversation so far.', items: { type: 'object' } },
+      max_completion_tokens: { type: 'integer', description: 'Upper bound for generated completion tokens.' },
+      temperature: { type: 'number', description: 'Sampling temperature.' },
+      top_p: { type: 'number', description: 'Nucleus sampling threshold.' },
+      n: { type: 'integer', description: 'Number of chat completion choices to generate.' },
+      stream: { type: 'boolean', description: 'Must be false or omitted - streaming (SSE) responses are out of scope.', default: false },
+      stop: { type: 'array', description: 'Sequences where the API will stop generating.', items: { type: 'string' } },
+      presence_penalty: { type: 'number', description: 'Penalize new tokens based on presence so far.' },
+      frequency_penalty: { type: 'number', description: 'Penalize new tokens based on frequency so far.' },
+      response_format: { type: 'object', description: 'Output format specification (e.g. JSON mode).' },
+      tools: { type: 'array', description: 'Tools the model may call.', items: { type: 'object' } },
+      tool_choice: { type: 'object', description: 'Controls which (if any) tool is called.' },
+      user: { type: 'string', description: 'Stable end-user identifier.' }
+    }
+  },
+  CortexOpenAIChatCompletionsResponse: {
+    type: 'object',
+    description: 'OpenAI Chat Completions API compatible response.',
+    properties: {
+      id: { type: 'string', description: 'Unique completion identifier.' },
+      object: { type: 'string', description: 'Object type (chat.completion).' },
+      created: { type: 'integer', description: 'Unix timestamp of creation.' },
+      model: { type: 'string', description: 'Model used for the completion.' },
+      choices: { type: 'array', description: 'Completion choices.', items: { type: 'object' } },
+      usage: { type: 'object', description: 'Completion token usage.' },
+      system_fingerprint: { type: 'string', description: 'Backend configuration fingerprint.' }
+    }
+  }
+};
+
+const CORTEX_GENERIC_BINDINGS = {
+  '/api/v2/cortex/v1/messages': ['CortexAnthropicMessagesRequest', 'CortexAnthropicMessagesResponse'],
+  '/api/v2/cortex/v1/chat/completions': ['CortexOpenAIChatCompletionsRequest', 'CortexOpenAIChatCompletionsResponse']
+};
+
+{
+  const entry = docs.get('cortex.yaml');
+  if (!entry) {
+    errors.push('cortex.yaml: file not found for generic endpoint typing');
+  } else {
+    const doc = entry.doc;
+    for (const [pathKey, [reqName, respName]] of Object.entries(CORTEX_GENERIC_BINDINGS)) {
+      const op = doc.paths?.[pathKey]?.post;
+      if (!op) {
+        errors.push(`cortex.yaml: expected POST ${pathKey} not found`);
+        continue;
+      }
+      const reqSchema = op.requestBody?.content?.['application/json'];
+      const respSchema = op.responses?.['200']?.content?.['application/json'];
+      if (!reqSchema || !respSchema) {
+        errors.push(`cortex.yaml: POST ${pathKey} missing application/json request or 200 response`);
+        continue;
+      }
+      const alreadyTyped = reqSchema.schema?.$ref?.endsWith(reqName);
+      if (!alreadyTyped) {
+        const opaque = (s) => s && s.type === 'object' && s.additionalProperties === true && !s.properties;
+        if (!opaque(reqSchema.schema) || !opaque(respSchema.schema)) {
+          errors.push(`cortex.yaml: POST ${pathKey} schemas are no longer the opaque passthrough shape - review the typed injection against the upstream change`);
+          continue;
+        }
+        doc.components = doc.components || {};
+        doc.components.schemas = doc.components.schemas || {};
+        doc.components.schemas[reqName] = CORTEX_GENERIC_SCHEMAS[reqName];
+        doc.components.schemas[respName] = CORTEX_GENERIC_SCHEMAS[respName];
+        reqSchema.schema = { $ref: `#/components/schemas/${reqName}` };
+        respSchema.schema = { $ref: `#/components/schemas/${respName}` };
+        entry.changed = true;
+        if (verbose) console.log(`cortex.yaml: POST ${pathKey} typed as ${reqName}/${respName}`);
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // createOrAlter PUT path split (see header)
 // ---------------------------------------------------------------------------
 

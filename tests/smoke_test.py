@@ -215,6 +215,16 @@ class Smoke:
             "role grants (PUBLIC)",
             f"SELECT * FROM snowflake.roles.role_grants WHERE name = 'PUBLIC' AND {self.where}",
         )
+        # cortex inference is a SELECT - WHERE members feed the request body;
+        # llama3.1-8b keeps the token cost at a fraction of a cent
+        self.step(
+            "cortex chat completion (SELECT-over-POST)",
+            f"SELECT model, choices FROM snowflake.cortex.chat_completions "
+            f"WHERE model = 'llama3.1-8b' "
+            f"AND messages = '[{{\"role\": \"user\", \"content\": \"Reply with exactly: SMOKE_OK\"}}]' "
+            f"AND {self.where}",
+            expect_rows=True, contains="SMOKE_OK",
+        )
 
     # ------------------------------------------------------------- write path
     def lifecycle(self) -> None:

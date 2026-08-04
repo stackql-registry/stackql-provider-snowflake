@@ -32,8 +32,52 @@ Creates, updates, deletes, gets or lists an <code>analyst_messages</code> resour
 
 The following fields are returned by `SELECT` queries:
 
-`SELECT` not supported for this resource, use `SHOW METHODS` to view available operations for the resource.
+<Tabs
+    defaultValue="send_message"
+    values={[
+        { label: 'send_message', value: 'send_message' }
+    ]}
+>
+<TabItem value="send_message">
 
+<table>
+<thead>
+    <tr>
+    <th>Name</th>
+    <th>Datatype</th>
+    <th>Description</th>
+    </tr>
+</thead>
+<tbody>
+<tr>
+    <td><CopyableCode code="request_id" /></td>
+    <td><code>string</code></td>
+    <td>Unique request ID</td>
+</tr>
+<tr>
+    <td><CopyableCode code="message" /></td>
+    <td><code>object</code></td>
+    <td>Represents a message within a chat. (title: The message object)</td>
+</tr>
+<tr>
+    <td><CopyableCode code="response_metadata" /></td>
+    <td><code>object</code></td>
+    <td></td>
+</tr>
+<tr>
+    <td><CopyableCode code="semantic_model_selection" /></td>
+    <td><code>object</code></td>
+    <td></td>
+</tr>
+<tr>
+    <td><CopyableCode code="warnings" /></td>
+    <td><code>array</code></td>
+    <td></td>
+</tr>
+</tbody>
+</table>
+</TabItem>
+</Tabs>
 
 ## Methods
 
@@ -52,8 +96,8 @@ The following methods are available for this resource:
 <tbody>
 <tr>
     <td><a href="#send_message"><CopyableCode code="send_message" /></a></td>
-    <td><CopyableCode code="insert" /></td>
-    <td><a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-messages"><code>messages</code></a></td>
+    <td><CopyableCode code="select" /></td>
+    <td><a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td></td>
     <td>Send a data question to the Cortex Analyst</td>
 </tr>
@@ -81,13 +125,12 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 </tbody>
 </table>
 
-## `INSERT` examples
+## `SELECT` examples
 
 <Tabs
     defaultValue="send_message"
     values={[
-        { label: 'send_message', value: 'send_message' },
-        { label: 'Manifest', value: 'manifest' }
+        { label: 'send_message', value: 'send_message' }
     ]}
 >
 <TabItem value="send_message">
@@ -95,95 +138,15 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 Send a data question to the Cortex Analyst
 
 ```sql
-INSERT INTO snowflake.cortex.analyst_messages (
-semantic_model_file,
-semantic_model,
-semantic_view,
-semantic_models,
-"stream",
-operation,
-warehouse,
-messages,
-source,
-experimental,
-endpoint
-)
-SELECT 
-'{{ semantic_model_file }}',
-'{{ semantic_model }}',
-'{{ semantic_view }}',
-'{{ semantic_models }}',
-{{ stream }},
-'{{ operation }}',
-'{{ warehouse }}',
-'{{ messages }}' /* required */,
-'{{ source }}',
-'{{ experimental }}',
-'{{ endpoint }}'
-RETURNING
+SELECT
 request_id,
 message,
 response_metadata,
 semantic_model_selection,
 warnings
+FROM snowflake.cortex.analyst_messages
+WHERE endpoint = '{{ endpoint }}' -- required
 ;
 ```
-</TabItem>
-<TabItem value="manifest">
-
-<CodeBlock language="yaml">{`# Description fields are for documentation purposes
-- name: analyst_messages
-  props:
-    - name: endpoint
-      value: "{{ endpoint }}"
-      description: Required parameter for the analyst_messages resource.
-    - name: semantic_model_file
-      value: "{{ semantic_model_file }}"
-      description: |
-        The path to a file stored in a Snowflake Stage holding the semantic model yaml. Must be a fully qualified stage url
-    - name: semantic_model
-      value: "{{ semantic_model }}"
-      description: |
-        A string containing the entire semantic model yaml
-    - name: semantic_view
-      value: "{{ semantic_view }}"
-      description: |
-        The name of the Snowflake native semantic model object
-    - name: semantic_models
-      description: |
-        A list of semantic model objects. If set, other semantic model properties are ignored
-      value:
-        - semantic_model_file: "{{ semantic_model_file }}"
-          semantic_view: "{{ semantic_view }}"
-          inline_semantic_model: "{{ inline_semantic_model }}"
-    - name: stream
-      value: {{ stream }}
-      description: |
-        Whether to stream the response or not
-      default: false
-    - name: operation
-      value: "{{ operation }}"
-      description: |
-        Whether to response with SQL or natural language. One of 'sql_generation' or 'answer_generation'
-      valid_values: ['sql_generation', 'answer_generation']
-      default: sql_generation
-    - name: warehouse
-      value: "{{ warehouse }}"
-      description: |
-        Warehouse name to use for result set handling. Only used when 'operation' is 'answer_generation'
-    - name: messages
-      value:
-        - role: "{{ role }}"
-          content: "{{ content }}"
-    - name: source
-      value: "{{ source }}"
-      description: |
-        an optional field to specify the source of the request. e.g "eval", "prod"
-    - name: experimental
-      value: "{{ experimental }}"
-      description: |
-        JSON serialized string of experimental API fields (undocumented).
-`}</CodeBlock>
-
 </TabItem>
 </Tabs>

@@ -49,6 +49,7 @@ SELECT name, owner FROM snowflake.databases.databases WHERE endpoint = 'MYORG-MY
 | grant privilege | `INSERT` | `grants.grants.grant`, `grants.group_grants.grant` |
 | revoke privilege | `DELETE` | `grants.grants.revoke` (+ `grant_options`, `group_grants`, `group_grant_options`) |
 | list grants | `SELECT` | `grants.grants.list_grants_to` |
+| Cortex inference (analyst message, Anthropic-compatible messages, OpenAI-compatible chat completions) | `SELECT` | SELECT-over-POST: `WHERE` members feed the request body, the completion projects as columns (matches the `anthropic`/`gemini` provider pattern). The vendor spec declares the generic endpoints as opaque passthroughs; typed request/response schemas are injected at pre-normalize |
 | SubmitStatement | `INSERT` + `RETURNING` | `sqlapi.statements.submit_statement` |
 | GetStatementStatus (incl. partition retrieval) | `SELECT` | `sqlapi.statements.get_statement_status` |
 | CancelStatement | `DELETE` | `sqlapi.statements.cancel_statement` |

@@ -32,8 +32,62 @@ Creates, updates, deletes, gets or lists a <code>chat_completions</code> resourc
 
 The following fields are returned by `SELECT` queries:
 
-`SELECT` not supported for this resource, use `SHOW METHODS` to view available operations for the resource.
+<Tabs
+    defaultValue="create"
+    values={[
+        { label: 'create', value: 'create' }
+    ]}
+>
+<TabItem value="create">
 
+<table>
+<thead>
+    <tr>
+    <th>Name</th>
+    <th>Datatype</th>
+    <th>Description</th>
+    </tr>
+</thead>
+<tbody>
+<tr>
+    <td><CopyableCode code="id" /></td>
+    <td><code>string</code></td>
+    <td>Unique completion identifier.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="choices" /></td>
+    <td><code>array</code></td>
+    <td>Completion choices.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="created" /></td>
+    <td><code>integer</code></td>
+    <td>Unix timestamp of creation.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="model" /></td>
+    <td><code>string</code></td>
+    <td>Model used for the completion.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="object" /></td>
+    <td><code>string</code></td>
+    <td>Object type (chat.completion).</td>
+</tr>
+<tr>
+    <td><CopyableCode code="system_fingerprint" /></td>
+    <td><code>string</code></td>
+    <td>Backend configuration fingerprint.</td>
+</tr>
+<tr>
+    <td><CopyableCode code="usage" /></td>
+    <td><code>string</code></td>
+    <td>Completion token usage. (opaque JSON object)</td>
+</tr>
+</tbody>
+</table>
+</TabItem>
+</Tabs>
 
 ## Methods
 
@@ -52,7 +106,7 @@ The following methods are available for this resource:
 <tbody>
 <tr>
     <td><a href="#create"><CopyableCode code="create" /></a></td>
-    <td><CopyableCode code="insert" /></td>
+    <td><CopyableCode code="select" /></td>
     <td><a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td></td>
     <td>Perform LLM text completion inference using Chat Completions API format.</td>
@@ -81,13 +135,12 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 </tbody>
 </table>
 
-## `INSERT` examples
+## `SELECT` examples
 
 <Tabs
     defaultValue="create"
     values={[
-        { label: 'create', value: 'create' },
-        { label: 'Manifest', value: 'manifest' }
+        { label: 'create', value: 'create' }
     ]}
 >
 <TabItem value="create">
@@ -95,23 +148,17 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
 Perform LLM text completion inference using Chat Completions API format.
 
 ```sql
-INSERT INTO snowflake.cortex.chat_completions (
-endpoint
-)
-SELECT 
-'{{ endpoint }}'
+SELECT
+id,
+choices,
+created,
+model,
+object,
+system_fingerprint,
+usage
+FROM snowflake.cortex.chat_completions
+WHERE endpoint = '{{ endpoint }}' -- required
 ;
 ```
-</TabItem>
-<TabItem value="manifest">
-
-<CodeBlock language="yaml">{`# Description fields are for documentation purposes
-- name: chat_completions
-  props:
-    - name: endpoint
-      value: "{{ endpoint }}"
-      description: Required parameter for the chat_completions resource.
-`}</CodeBlock>
-
 </TabItem>
 </Tabs>

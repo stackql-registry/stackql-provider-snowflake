@@ -113,6 +113,23 @@ WHERE warehouse_name = 'REPORTING_WH'
 AND endpoint = 'myorg-myaccount';
 ```
 
+## Cortex AI inference
+
+Cortex inference is a `SELECT` - `WHERE` members feed the request body, and the completion projects as columns. The OpenAI-compatible and Anthropic-compatible endpoints are both available:
+
+```sql
+SELECT
+  model,
+  choices,
+  usage
+FROM snowflake.cortex.chat_completions
+WHERE model = 'llama3.1-8b'
+AND messages = '[{"role": "user", "content": "Summarize warehouse spend drivers"}]'
+AND endpoint = 'myorg-myaccount';
+```
+
+> Streaming (SSE) responses are out of scope; completions return in JSON mode. Model availability varies by account and region.
+
 ## Data plane: submit a statement
 
 Statement submission is an `INSERT` with a `RETURNING` clause - inventory the control plane and query the data inside it in the same session. `"User-Agent"` is a required header carried as a column; its hyphenated wire name is addressed with double quotes:
