@@ -145,7 +145,7 @@ function mapGrantSubresource(pathKey, verb, opId) {
 }
 
 function mapGrantOperation(pathKey, verb) {
-  const bulk = pathKey.includes('{bulkGrantType}');
+  const bulk = pathKey.includes('{bulk_grant_type}');
   const grantOption = pathKey.endsWith('/grant-option');
   const resource = `${bulk ? 'group_' : ''}grant${grantOption ? '_options' : 's'}`;
   if (verb === 'get') return { resource: 'grants', method: 'list_grants_to', sqlVerb: 'select', objectKey: '$.grants_to' };

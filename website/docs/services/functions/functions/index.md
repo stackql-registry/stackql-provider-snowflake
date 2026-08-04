@@ -181,7 +181,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#get"><CopyableCode code="get" /></a></td>
     <td><CopyableCode code="select" /></td>
-    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-nameWithArgs"><code>nameWithArgs</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-name_with_args"><code>name_with_args</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td></td>
     <td>Fetch a Function using the describe command output.</td>
 </tr>
@@ -202,7 +202,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#delete"><CopyableCode code="delete" /></a></td>
     <td><CopyableCode code="delete" /></td>
-    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-nameWithArgs"><code>nameWithArgs</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-name_with_args"><code>name_with_args</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
     <td>Delete a function with the given name and args.</td>
 </tr>
@@ -244,8 +244,8 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><code>string</code></td>
     <td>Identifier (i.e. name) for the resource.</td>
 </tr>
-<tr id="parameter-nameWithArgs">
-    <td><CopyableCode code="nameWithArgs" /></td>
+<tr id="parameter-name_with_args">
+    <td><CopyableCode code="name_with_args" /></td>
     <td><code>string</code></td>
     <td>Function's name with Args</td>
 </tr>
@@ -299,7 +299,7 @@ signature
 FROM snowflake.functions.functions
 WHERE database_name = '{{ database_name }}' -- required
 AND schema_name = '{{ schema_name }}' -- required
-AND nameWithArgs = '{{ nameWithArgs }}' -- required
+AND name_with_args = '{{ name_with_args }}' -- required
 AND endpoint = '{{ endpoint }}' -- required
 ;
 ```
@@ -455,7 +455,7 @@ Delete a function with the given name and args.
 DELETE FROM snowflake.functions.functions
 WHERE database_name = '{{ database_name }}' --required
 AND schema_name = '{{ schema_name }}' --required
-AND nameWithArgs = '{{ nameWithArgs }}' --required
+AND name_with_args = '{{ name_with_args }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND ifExists = '{{ ifExists }}'
 ;

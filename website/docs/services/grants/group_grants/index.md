@@ -53,14 +53,14 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#grant"><CopyableCode code="grant" /></a></td>
     <td><CopyableCode code="insert" /></td>
-    <td><a href="#parameter-granteeType"><code>granteeType</code></a>, <a href="#parameter-granteeName"><code>granteeName</code></a>, <a href="#parameter-bulkGrantType"><code>bulkGrantType</code></a>, <a href="#parameter-securableTypePlural"><code>securableTypePlural</code></a>, <a href="#parameter-scopeType"><code>scopeType</code></a>, <a href="#parameter-scopeName"><code>scopeName</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-grantee_type"><code>grantee_type</code></a>, <a href="#parameter-grantee_name"><code>grantee_name</code></a>, <a href="#parameter-bulk_grant_type"><code>bulk_grant_type</code></a>, <a href="#parameter-securable_type_plural"><code>securable_type_plural</code></a>, <a href="#parameter-scope_type"><code>scope_type</code></a>, <a href="#parameter-scope_name"><code>scope_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td></td>
     <td>Endpoint to indicate that the privileges listed in the request body should be granted to all securables of this type in the given scope.</td>
 </tr>
 <tr>
     <td><a href="#revoke"><CopyableCode code="revoke" /></a></td>
     <td><CopyableCode code="delete" /></td>
-    <td><a href="#parameter-granteeType"><code>granteeType</code></a>, <a href="#parameter-granteeName"><code>granteeName</code></a>, <a href="#parameter-bulkGrantType"><code>bulkGrantType</code></a>, <a href="#parameter-securableTypePlural"><code>securableTypePlural</code></a>, <a href="#parameter-scopeType"><code>scopeType</code></a>, <a href="#parameter-scopeName"><code>scopeName</code></a>, <a href="#parameter-privilege"><code>privilege</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-grantee_type"><code>grantee_type</code></a>, <a href="#parameter-grantee_name"><code>grantee_name</code></a>, <a href="#parameter-bulk_grant_type"><code>bulk_grant_type</code></a>, <a href="#parameter-securable_type_plural"><code>securable_type_plural</code></a>, <a href="#parameter-scope_type"><code>scope_type</code></a>, <a href="#parameter-scope_name"><code>scope_name</code></a>, <a href="#parameter-privilege"><code>privilege</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td><a href="#parameter-deleteMode"><code>deleteMode</code></a></td>
     <td>Endpoint to indicate that the privilege listed on the group securable in the given scope should be revoked.</td>
 </tr>
@@ -80,8 +80,8 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     </tr>
 </thead>
 <tbody>
-<tr id="parameter-bulkGrantType">
-    <td><CopyableCode code="bulkGrantType" /></td>
+<tr id="parameter-bulk_grant_type">
+    <td><CopyableCode code="bulk_grant_type" /></td>
     <td><code>string</code></td>
     <td>String that species whether this group privilege should be on ALL or FUTURE resources of the specified plural type</td>
 </tr>
@@ -90,13 +90,13 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><code>string</code></td>
     <td>Organization and account identifier (orgname-accountname) (default: orgname-accountname)</td>
 </tr>
-<tr id="parameter-granteeName">
-    <td><CopyableCode code="granteeName" /></td>
+<tr id="parameter-grantee_name">
+    <td><CopyableCode code="grantee_name" /></td>
     <td><code>string</code></td>
     <td>String that specifies the name of the privilege grantee.</td>
 </tr>
-<tr id="parameter-granteeType">
-    <td><CopyableCode code="granteeType" /></td>
+<tr id="parameter-grantee_type">
+    <td><CopyableCode code="grantee_type" /></td>
     <td><code>string</code></td>
     <td>String that specifies the type of resource that is the privilege grantee.</td>
 </tr>
@@ -105,18 +105,18 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><code>string</code></td>
     <td>String that specifies a privilege to be revoked</td>
 </tr>
-<tr id="parameter-scopeName">
-    <td><CopyableCode code="scopeName" /></td>
+<tr id="parameter-scope_name">
+    <td><CopyableCode code="scope_name" /></td>
     <td><code>string</code></td>
     <td>String that specifies the name of resource that is the scope of an ALL/FUTURE privilege</td>
 </tr>
-<tr id="parameter-scopeType">
-    <td><CopyableCode code="scopeType" /></td>
+<tr id="parameter-scope_type">
+    <td><CopyableCode code="scope_type" /></td>
     <td><code>string</code></td>
     <td>String that specifies the type of resource that is the scope of an ALL/FUTURE privilege. Can only be DATABASE or SCHEMA</td>
 </tr>
-<tr id="parameter-securableTypePlural">
-    <td><CopyableCode code="securableTypePlural" /></td>
+<tr id="parameter-securable_type_plural">
+    <td><CopyableCode code="securable_type_plural" /></td>
     <td><code>string</code></td>
     <td>String that specifies the plural of the type of resource that is being secured by an ALL/FUTURE privilege. Must be either "schemas" or any plural object type that can nest under a schema such as "tables"</td>
 </tr>
@@ -152,12 +152,12 @@ securable_type,
 securable_name,
 granted_by_role_type,
 granted_by_name,
-granteeType,
-granteeName,
-bulkGrantType,
-securableTypePlural,
-scopeType,
-scopeName,
+grantee_type,
+grantee_name,
+bulk_grant_type,
+securable_type_plural,
+scope_type,
+scope_name,
 endpoint
 )
 SELECT 
@@ -170,12 +170,12 @@ SELECT
 '{{ securable_name }}',
 '{{ granted_by_role_type }}',
 '{{ granted_by_name }}',
-'{{ granteeType }}',
-'{{ granteeName }}',
-'{{ bulkGrantType }}',
-'{{ securableTypePlural }}',
-'{{ scopeType }}',
-'{{ scopeName }}',
+'{{ grantee_type }}',
+'{{ grantee_name }}',
+'{{ bulk_grant_type }}',
+'{{ securable_type_plural }}',
+'{{ scope_type }}',
+'{{ scope_name }}',
 '{{ endpoint }}'
 RETURNING
 status
@@ -187,23 +187,23 @@ status
 <CodeBlock language="yaml">{`# Description fields are for documentation purposes
 - name: group_grants
   props:
-    - name: granteeType
-      value: "{{ granteeType }}"
+    - name: grantee_type
+      value: "{{ grantee_type }}"
       description: Required parameter for the group_grants resource.
-    - name: granteeName
-      value: "{{ granteeName }}"
+    - name: grantee_name
+      value: "{{ grantee_name }}"
       description: Required parameter for the group_grants resource.
-    - name: bulkGrantType
-      value: "{{ bulkGrantType }}"
+    - name: bulk_grant_type
+      value: "{{ bulk_grant_type }}"
       description: Required parameter for the group_grants resource.
-    - name: securableTypePlural
-      value: "{{ securableTypePlural }}"
+    - name: securable_type_plural
+      value: "{{ securable_type_plural }}"
       description: Required parameter for the group_grants resource.
-    - name: scopeType
-      value: "{{ scopeType }}"
+    - name: scope_type
+      value: "{{ scope_type }}"
       description: Required parameter for the group_grants resource.
-    - name: scopeName
-      value: "{{ scopeName }}"
+    - name: scope_name
+      value: "{{ scope_name }}"
       description: Required parameter for the group_grants resource.
     - name: endpoint
       value: "{{ endpoint }}"
@@ -263,12 +263,12 @@ Endpoint to indicate that the privilege listed on the group securable in the giv
 
 ```sql
 DELETE FROM snowflake.grants.group_grants
-WHERE granteeType = '{{ granteeType }}' --required
-AND granteeName = '{{ granteeName }}' --required
-AND bulkGrantType = '{{ bulkGrantType }}' --required
-AND securableTypePlural = '{{ securableTypePlural }}' --required
-AND scopeType = '{{ scopeType }}' --required
-AND scopeName = '{{ scopeName }}' --required
+WHERE grantee_type = '{{ grantee_type }}' --required
+AND grantee_name = '{{ grantee_name }}' --required
+AND bulk_grant_type = '{{ bulk_grant_type }}' --required
+AND securable_type_plural = '{{ securable_type_plural }}' --required
+AND scope_type = '{{ scope_type }}' --required
+AND scope_name = '{{ scope_name }}' --required
 AND privilege = '{{ privilege }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND deleteMode = '{{ deleteMode }}'

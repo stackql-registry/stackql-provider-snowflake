@@ -16,6 +16,7 @@ This rebuild is a breaking change relative to the published `snowflake` provider
 - `REPLACE` (create-or-alter) statements address the target with a `<singular>_name` WHERE parameter (`WHERE database_name = 'X'`, `WHERE warehouse_name = 'X'`) while `SET name = 'X'` populates the request body - the create-or-alter body requires `name` and any-sdk routes a SQL column matching a declared path parameter to the path, so the PUT path parameter is renamed at pre-normalize (wire URL unchanged; see NOTES.md).
 - Request body columns move from `data__` prefixed (`data__name`) to native wire property names (`name`, `accounts`) via the naive request body translator, consistent with the `k8s`, `aws` and `azure` providers.
 - List responses gain object keys: bare-array list responses are wrapped at normalize time and each list method carries the matching `stackql_object_key` (`$.databases`, `$.schemas`, `$.grants_to`).
+- Field and parameter names present as snake_case throughout: camelCase response fields surface as snake_case column aliases via the provider-level `snake_case_aliases` config (`statementHandle` -> `statement_handle`, `resultSetMetaData` -> `result_set_meta_data`; value extraction still keys on the wire name), and camelCase path parameters are renamed at pre-process (`granteeType` -> `grantee_type`, `statementHandle` -> `statement_handle` - path template names never reach the wire). Query parameter and header names keep their wire casing (`showLimit`, `fromName`, `"User-Agent"`).
 - The required `User-Agent` header parameter no longer surfaces as a required query column (stripped/defaulted in pre-normalization; in the published provider it is a required parameter on every method).
 - Coverage expands to the current vendor spec sync: artifact repositories, secrets, sequences, network rules, password policies, tags, Streamlit apps and the Cortex generic (Anthropic/OpenAI-compatible) endpoints are added. Spark Connect endpoints are excluded with a recorded reason.
 - The `endpoint` server variable (`orgname-accountname` account identifier) and `SNOWFLAKE_PAT` bearer authentication are unchanged.
@@ -61,7 +62,7 @@ Statement submission maps to `INSERT ... RETURNING` because StackQL does not yet
 -- submit a statement against a warehouse and read the result
 INSERT INTO snowflake.sqlapi.statements(statement, warehouse, database, "schema", endpoint)
 SELECT 'select count(*) from lineitem', 'TESTWH', 'TESTDB', 'TPCH_SF1', 'MYORG-MYACCT'
-RETURNING statementHandle, resultSetMetaData, data;
+RETURNING statement_handle, result_set_meta_data, data;
 ```
 
 ## Pagination and pushdown

@@ -119,8 +119,8 @@ SELECT
   grant_option,
   granted_by_name
 FROM snowflake.grants.grants
-WHERE granteeType = 'role'
-AND granteeName = 'ANALYST'
+WHERE grantee_type = 'role'
+AND grantee_name = 'ANALYST'
 AND endpoint = 'myorg-myaccount';
 ```
 
@@ -174,7 +174,7 @@ SELECT
   'REPORTING_WH',
   'stackql/1.0',
   'myorg-myaccount'
-RETURNING statementHandle, resultSetMetaData, data;
+RETURNING statement_handle, result_set_meta_data, data;
 ```
 
 

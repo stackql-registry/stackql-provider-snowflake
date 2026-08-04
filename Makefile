@@ -14,7 +14,7 @@ SHELL := bash
 PROVIDER := snowflake
 SERVICES_DIR := provider-dev/openapi/src/$(PROVIDER)
 SERVERS := [{"url": "https://{endpoint}.snowflakecomputing.com", "variables": {"endpoint": {"default": "orgname-accountname", "description": "Organization and account identifier (orgname-accountname)"}}}]
-PROVIDER_CONFIG := {"auth": {"type": "bearer", "credentialsenvvar": "SNOWFLAKE_PAT"}}
+PROVIDER_CONFIG := {"auth": {"type": "bearer", "credentialsenvvar": "SNOWFLAKE_PAT"}, "snake_case_aliases": true}
 # NOTE: no pagination config is shipped. The vendor specs declare RFC 5988
 # Link headers on list responses, but the live control plane does not emit
 # them (verified against a real account), and any-sdk (stackql v0.10.582)
@@ -39,7 +39,8 @@ split: ## regroup pre-processed specs into consolidated service specs
 pre-normalize: ## snowflake-specific spec adjustments (operationId dedupe)
 	npm run pre-normalize
 
-mappings: ## regenerate all_services.csv and apply the mechanical verb mappings
+mappings: ## regenerate all_services.csv from scratch and apply the mechanical verb mappings
+	rm -f provider-dev/config/all_services.csv
 	npm run generate-mappings -- --provider-name $(PROVIDER) --input-dir provider-dev/source --output-dir provider-dev/config
 	npm run map-operations
 

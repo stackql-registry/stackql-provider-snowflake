@@ -119,21 +119,21 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#list_grants_to"><CopyableCode code="list_grants_to" /></a></td>
     <td><CopyableCode code="select" /></td>
-    <td><a href="#parameter-granteeType"><code>granteeType</code></a>, <a href="#parameter-granteeName"><code>granteeName</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-grantee_type"><code>grantee_type</code></a>, <a href="#parameter-grantee_name"><code>grantee_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td><a href="#parameter-showLimit"><code>showLimit</code></a></td>
     <td>List the roles and privileges granted to the specified grantee using the output of SHOW GRANTS TO</td>
 </tr>
 <tr>
     <td><a href="#grant"><CopyableCode code="grant" /></a></td>
     <td><CopyableCode code="insert" /></td>
-    <td><a href="#parameter-granteeType"><code>granteeType</code></a>, <a href="#parameter-granteeName"><code>granteeName</code></a>, <a href="#parameter-securableType"><code>securableType</code></a>, <a href="#parameter-securableName"><code>securableName</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-grantee_type"><code>grantee_type</code></a>, <a href="#parameter-grantee_name"><code>grantee_name</code></a>, <a href="#parameter-securable_type"><code>securable_type</code></a>, <a href="#parameter-securable_name"><code>securable_name</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td></td>
     <td>Endpoint to indicate that the privileges listed in the request body should be granted.</td>
 </tr>
 <tr>
     <td><a href="#revoke"><CopyableCode code="revoke" /></a></td>
     <td><CopyableCode code="delete" /></td>
-    <td><a href="#parameter-granteeType"><code>granteeType</code></a>, <a href="#parameter-granteeName"><code>granteeName</code></a>, <a href="#parameter-securableType"><code>securableType</code></a>, <a href="#parameter-securableName"><code>securableName</code></a>, <a href="#parameter-privilege"><code>privilege</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-grantee_type"><code>grantee_type</code></a>, <a href="#parameter-grantee_name"><code>grantee_name</code></a>, <a href="#parameter-securable_type"><code>securable_type</code></a>, <a href="#parameter-securable_name"><code>securable_name</code></a>, <a href="#parameter-privilege"><code>privilege</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td><a href="#parameter-deleteMode"><code>deleteMode</code></a></td>
     <td>Endpoint to indicate that the privilege listed in the path should be revoked.</td>
 </tr>
@@ -158,13 +158,13 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><code>string</code></td>
     <td>Organization and account identifier (orgname-accountname) (default: orgname-accountname)</td>
 </tr>
-<tr id="parameter-granteeName">
-    <td><CopyableCode code="granteeName" /></td>
+<tr id="parameter-grantee_name">
+    <td><CopyableCode code="grantee_name" /></td>
     <td><code>string</code></td>
     <td>String that specifies the name of the privilege grantee.</td>
 </tr>
-<tr id="parameter-granteeType">
-    <td><CopyableCode code="granteeType" /></td>
+<tr id="parameter-grantee_type">
+    <td><CopyableCode code="grantee_type" /></td>
     <td><code>string</code></td>
     <td>String that specifies the type of resource that is the privilege grantee.</td>
 </tr>
@@ -173,13 +173,13 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><code>string</code></td>
     <td>String that specifies a privilege to be revoked</td>
 </tr>
-<tr id="parameter-securableName">
-    <td><CopyableCode code="securableName" /></td>
+<tr id="parameter-securable_name">
+    <td><CopyableCode code="securable_name" /></td>
     <td><code>string</code></td>
     <td>String that specifies the name of resource that is being secured by a privilege.</td>
 </tr>
-<tr id="parameter-securableType">
-    <td><CopyableCode code="securableType" /></td>
+<tr id="parameter-securable_type">
+    <td><CopyableCode code="securable_type" /></td>
     <td><code>string</code></td>
     <td>String that specifies the type of resource that is being secured by a privilege.</td>
 </tr>
@@ -220,8 +220,8 @@ grantee_type,
 privileges,
 securable_type
 FROM snowflake.grants.grants
-WHERE granteeType = '{{ granteeType }}' -- required
-AND granteeName = '{{ granteeName }}' -- required
+WHERE grantee_type = '{{ grantee_type }}' -- required
+AND grantee_name = '{{ grantee_name }}' -- required
 AND endpoint = '{{ endpoint }}' -- required
 AND showLimit = '{{ showLimit }}'
 ;
@@ -254,10 +254,10 @@ securable_type,
 securable_name,
 granted_by_role_type,
 granted_by_name,
-granteeType,
-granteeName,
-securableType,
-securableName,
+grantee_type,
+grantee_name,
+securable_type,
+securable_name,
 endpoint
 )
 SELECT 
@@ -270,10 +270,10 @@ SELECT
 '{{ securable_name }}',
 '{{ granted_by_role_type }}',
 '{{ granted_by_name }}',
-'{{ granteeType }}',
-'{{ granteeName }}',
-'{{ securableType }}',
-'{{ securableName }}',
+'{{ grantee_type }}',
+'{{ grantee_name }}',
+'{{ securable_type }}',
+'{{ securable_name }}',
 '{{ endpoint }}'
 RETURNING
 status
@@ -285,17 +285,17 @@ status
 <CodeBlock language="yaml">{`# Description fields are for documentation purposes
 - name: grants
   props:
-    - name: granteeType
-      value: "{{ granteeType }}"
+    - name: grantee_type
+      value: "{{ grantee_type }}"
       description: Required parameter for the grants resource.
-    - name: granteeName
-      value: "{{ granteeName }}"
+    - name: grantee_name
+      value: "{{ grantee_name }}"
       description: Required parameter for the grants resource.
-    - name: securableType
-      value: "{{ securableType }}"
+    - name: securable_type
+      value: "{{ securable_type }}"
       description: Required parameter for the grants resource.
-    - name: securableName
-      value: "{{ securableName }}"
+    - name: securable_name
+      value: "{{ securable_name }}"
       description: Required parameter for the grants resource.
     - name: endpoint
       value: "{{ endpoint }}"
@@ -355,10 +355,10 @@ Endpoint to indicate that the privilege listed in the path should be revoked.
 
 ```sql
 DELETE FROM snowflake.grants.grants
-WHERE granteeType = '{{ granteeType }}' --required
-AND granteeName = '{{ granteeName }}' --required
-AND securableType = '{{ securableType }}' --required
-AND securableName = '{{ securableName }}' --required
+WHERE grantee_type = '{{ grantee_type }}' --required
+AND grantee_name = '{{ grantee_name }}' --required
+AND securable_type = '{{ securable_type }}' --required
+AND securable_name = '{{ securable_name }}' --required
 AND privilege = '{{ privilege }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND deleteMode = '{{ deleteMode }}'

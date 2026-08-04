@@ -191,26 +191,26 @@ try {
     r.err || JSON.stringify(r.rows));
 
   // --- grants round trip: INSERT (grant) / SELECT (list_grants_to) / DELETE (revoke)
-  r = await runSql(`SELECT grantee_name, securable_type, securable_name, privileges FROM snowflake.grants.grants WHERE granteeType = 'role' AND granteeName = 'SYSADMIN'`);
+  r = await runSql(`SELECT grantee_name, securable_type, securable_name, privileges FROM snowflake.grants.grants WHERE grantee_type = 'role' AND grantee_name = 'SYSADMIN'`);
   check('grants SELECT baseline (1 seeded row via $.grants_to)',
     r.rows && r.rows.length === 1 && JSON.stringify(r.rows[0]).includes('CREATE DATABASE'),
     r.err || JSON.stringify(r.rows));
 
-  r = await runSql(`INSERT INTO snowflake.grants.grants(granteeType, granteeName, securableType, securableName, privileges) SELECT 'role', 'SYSADMIN', 'database', 'TEST_DB', '["USAGE"]'`);
+  r = await runSql(`INSERT INTO snowflake.grants.grants(grantee_type, grantee_name, securable_type, securable_name, privileges) SELECT 'role', 'SYSADMIN', 'database', 'TEST_DB', '["USAGE"]'`);
   check('grant INSERT (POST privileges)', !r.err, r.err);
   const grantPost = log.filter((e) => e.method === 'POST' && e.path === '/api/v2/grants/role/SYSADMIN/database/TEST_DB/privileges');
   check('grant INSERT hit the wire with all 4 path params',
     grantPost.length === 1 && Array.isArray(grantPost[0].body?.privileges) && grantPost[0].body.privileges.includes('USAGE'),
     JSON.stringify(grantPost.map((c) => c.body)));
 
-  r = await runSql(`SELECT grantee_name, securable_type, securable_name, privileges FROM snowflake.grants.grants WHERE granteeType = 'role' AND granteeName = 'SYSADMIN'`);
+  r = await runSql(`SELECT grantee_name, securable_type, securable_name, privileges FROM snowflake.grants.grants WHERE grantee_type = 'role' AND grantee_name = 'SYSADMIN'`);
   check('grants SELECT after grant (2 rows, USAGE on TEST_DB present)',
     r.rows && r.rows.length === 2 && JSON.stringify(r.rows).includes('USAGE') && JSON.stringify(r.rows).includes('TEST_DB'),
     r.err || JSON.stringify(r.rows));
 
-  r = await runSql(`DELETE FROM snowflake.grants.grants WHERE granteeType = 'role' AND granteeName = 'SYSADMIN' AND securableType = 'database' AND securableName = 'TEST_DB' AND privilege = 'USAGE'`);
+  r = await runSql(`DELETE FROM snowflake.grants.grants WHERE grantee_type = 'role' AND grantee_name = 'SYSADMIN' AND securable_type = 'database' AND securable_name = 'TEST_DB' AND privilege = 'USAGE'`);
   check('grant DELETE (revoke)', !r.err, r.err);
-  r = await runSql(`SELECT privileges FROM snowflake.grants.grants WHERE granteeType = 'role' AND granteeName = 'SYSADMIN'`);
+  r = await runSql(`SELECT privileges FROM snowflake.grants.grants WHERE grantee_type = 'role' AND grantee_name = 'SYSADMIN'`);
   check('grants SELECT after revoke (back to 1 row, USAGE gone)',
     r.rows && r.rows.length === 1 && !JSON.stringify(r.rows).includes('USAGE'),
     r.err || JSON.stringify(r.rows));
@@ -234,8 +234,8 @@ try {
 
   // --- SQL API: statement submission (INSERT ... RETURNING) - the
   // "User-Agent" quoted column supplies the required header parameter
-  r = await runSql(`INSERT INTO snowflake.sqlapi.statements(statement, warehouse, "User-Agent") SELECT 'select id, name from customers', 'WH1', 'stackql-integration/1.0' RETURNING statementHandle, data`);
-  check('statement INSERT RETURNING yields statementHandle',
+  r = await runSql(`INSERT INTO snowflake.sqlapi.statements(statement, warehouse, "User-Agent") SELECT 'select id, name from customers', 'WH1', 'stackql-integration/1.0' RETURNING statement_handle, data`);
+  check('statement INSERT RETURNING yields statement_handle',
     r.rows && r.rows.length === 1 && JSON.stringify(r.rows[0]).includes(STATEMENT_HANDLE),
     r.err || JSON.stringify(r.rows));
   check('RETURNING data carries partition 0 rows',

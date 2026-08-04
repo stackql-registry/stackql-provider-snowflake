@@ -35,7 +35,11 @@ const specsDir = path.join(repoRoot, 'specifications');
 const outDir = path.join(repoRoot, 'provider-dev', 'source');
 const verbose = process.argv.includes('--verbose');
 
-// reserved-word path parameter renames carried over from the original build
+// reserved-word path parameter renames carried over from the original build,
+// plus snake_case renames of camelCase path parameters - the provider
+// presents snake_case wherever the wire allows (path template names never
+// reach the wire; query parameter and header names do and keep their wire
+// casing, e.g. showLimit, fromName, User-Agent)
 const PATH_PARAM_RENAMES = {
   database: 'database_name',
   schema: 'schema_name',
@@ -46,7 +50,18 @@ const PATH_PARAM_RENAMES = {
   stage: 'stage_name',
   pipe: 'pipe_name',
   task: 'task_name',
-  stream: 'stream_name'
+  stream: 'stream_name',
+  nameWithArgs: 'name_with_args',
+  granteeType: 'grantee_type',
+  granteeName: 'grantee_name',
+  securableType: 'securable_type',
+  securableName: 'securable_name',
+  bulkGrantType: 'bulk_grant_type',
+  securableTypePlural: 'securable_type_plural',
+  scopeType: 'scope_type',
+  scopeName: 'scope_name',
+  filePath: 'file_path',
+  statementHandle: 'statement_handle'
 };
 
 const COMMON_REF_RE = /(?:\.\/)?(common[a-z-]*\.ya?ml)#\//g;

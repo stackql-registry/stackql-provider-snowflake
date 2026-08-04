@@ -285,21 +285,21 @@ class Smoke:
         )
         self.step(
             "grant INSERT (USAGE on database to role)",
-            f"INSERT INTO snowflake.grants.grants(granteeType, granteeName, securableType, "
-            f"securableName, privileges, endpoint) "
+            f"INSERT INTO snowflake.grants.grants(grantee_type, grantee_name, securable_type, "
+            f"securable_name, privileges, endpoint) "
             f"SELECT 'role', '{role}', 'DATABASE', '{db}', '[\"USAGE\"]', '{ep}'",
         )
         self.step(
             "grant SELECT (audit the grant)",
-            f"SELECT * FROM snowflake.grants.grants WHERE granteeType = 'role' "
-            f"AND granteeName = '{role}' AND {where}",
+            f"SELECT * FROM snowflake.grants.grants WHERE grantee_type = 'role' "
+            f"AND grantee_name = '{role}' AND {where}",
             expect_rows=True, contains="USAGE",
         )
         self.step(
             "grant DELETE (revoke)",
-            f"DELETE FROM snowflake.grants.grants WHERE granteeType = 'role' "
-            f"AND granteeName = '{role}' AND securableType = 'DATABASE' "
-            f"AND securableName = '{db}' AND privilege = 'USAGE' AND {where}",
+            f"DELETE FROM snowflake.grants.grants WHERE grantee_type = 'role' "
+            f"AND grantee_name = '{role}' AND securable_type = 'DATABASE' "
+            f"AND securable_name = '{db}' AND privilege = 'USAGE' AND {where}",
         )
 
         # lifecycle EXEC action
@@ -313,7 +313,7 @@ class Smoke:
             "statement submission (INSERT ... RETURNING)",
             f"INSERT INTO snowflake.sqlapi.statements(statement, warehouse, \"User-Agent\", endpoint) "
             f"SELECT 'SELECT 1 AS SMOKE_CHECK', '{wh}', 'stackql-smoke', '{ep}' "
-            f"RETURNING statementHandle, data",
+            f"RETURNING statement_handle, data",
             expect_rows=True,
         )
         self.step(

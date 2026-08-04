@@ -251,7 +251,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#get"><CopyableCode code="get" /></a></td>
     <td><CopyableCode code="select" /></td>
-    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-nameWithArgs"><code>nameWithArgs</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-name_with_args"><code>name_with_args</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td></td>
     <td>Fetch a procedure</td>
 </tr>
@@ -272,14 +272,14 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#delete"><CopyableCode code="delete" /></a></td>
     <td><CopyableCode code="delete" /></td>
-    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-nameWithArgs"><code>nameWithArgs</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-name_with_args"><code>name_with_args</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td><a href="#parameter-ifExists"><code>ifExists</code></a></td>
     <td>Delete a procedure</td>
 </tr>
 <tr>
     <td><a href="#call"><CopyableCode code="call" /></a></td>
     <td><CopyableCode code="exec" /></td>
-    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-nameWithArgs"><code>nameWithArgs</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-call_arguments"><code>call_arguments</code></a></td>
+    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-name_with_args"><code>name_with_args</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a>, <a href="#parameter-call_arguments"><code>call_arguments</code></a></td>
     <td></td>
     <td>Call a procedure</td>
 </tr>
@@ -309,8 +309,8 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><code>string</code></td>
     <td>Organization and account identifier (orgname-accountname) (default: orgname-accountname)</td>
 </tr>
-<tr id="parameter-nameWithArgs">
-    <td><CopyableCode code="nameWithArgs" /></td>
+<tr id="parameter-name_with_args">
+    <td><CopyableCode code="name_with_args" /></td>
     <td><code>string</code></td>
     <td>Function's name with Args</td>
 </tr>
@@ -376,7 +376,7 @@ return_type
 FROM snowflake.functions.procedures
 WHERE database_name = '{{ database_name }}' -- required
 AND schema_name = '{{ schema_name }}' -- required
-AND nameWithArgs = '{{ nameWithArgs }}' -- required
+AND name_with_args = '{{ name_with_args }}' -- required
 AND endpoint = '{{ endpoint }}' -- required
 ;
 ```
@@ -545,7 +545,7 @@ Delete a procedure
 DELETE FROM snowflake.functions.procedures
 WHERE database_name = '{{ database_name }}' --required
 AND schema_name = '{{ schema_name }}' --required
-AND nameWithArgs = '{{ nameWithArgs }}' --required
+AND name_with_args = '{{ name_with_args }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND ifExists = '{{ ifExists }}'
 ;
@@ -570,7 +570,7 @@ Call a procedure
 EXEC snowflake.functions.procedures.call 
 @database_name='{{ database_name }}' --required, 
 @schema_name='{{ schema_name }}' --required, 
-@nameWithArgs='{{ nameWithArgs }}' --required, 
+@name_with_args='{{ name_with_args }}' --required, 
 @endpoint='{{ endpoint }}' --required 
 @@json=
 '{

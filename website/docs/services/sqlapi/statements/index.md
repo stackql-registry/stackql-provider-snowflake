@@ -119,7 +119,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#get_statement_status"><CopyableCode code="get_statement_status" /></a></td>
     <td><CopyableCode code="select" /></td>
-    <td><a href="#parameter-statementHandle"><code>statementHandle</code></a>, <a href="#parameter-User-Agent"><code>User-Agent</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-statement_handle"><code>statement_handle</code></a>, <a href="#parameter-User-Agent"><code>User-Agent</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td><a href="#parameter-requestId"><code>requestId</code></a>, <a href="#parameter-partition"><code>partition</code></a>, <a href="#parameter-Accept"><code>Accept</code></a>, <a href="#parameter-X-Snowflake-Authorization-Token-Type"><code>X-Snowflake-Authorization-Token-Type</code></a></td>
     <td>Checks the status of the execution of the statement with the specified statement handle. If the statement was executed successfully, the operation returns the requested partition of the result set.</td>
 </tr>
@@ -133,7 +133,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#cancel_statement"><CopyableCode code="cancel_statement" /></a></td>
     <td><CopyableCode code="delete" /></td>
-    <td><a href="#parameter-statementHandle"><code>statementHandle</code></a>, <a href="#parameter-User-Agent"><code>User-Agent</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-statement_handle"><code>statement_handle</code></a>, <a href="#parameter-User-Agent"><code>User-Agent</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td><a href="#parameter-requestId"><code>requestId</code></a>, <a href="#parameter-Accept"><code>Accept</code></a>, <a href="#parameter-X-Snowflake-Authorization-Token-Type"><code>X-Snowflake-Authorization-Token-Type</code></a></td>
     <td>Cancels the execution of the statement with the specified statement handle.</td>
 </tr>
@@ -163,8 +163,8 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><code>string</code></td>
     <td>Organization and account identifier (orgname-accountname) (default: orgname-accountname)</td>
 </tr>
-<tr id="parameter-statementHandle">
-    <td><CopyableCode code="statementHandle" /></td>
+<tr id="parameter-statement_handle">
+    <td><CopyableCode code="statement_handle" /></td>
     <td><code>string (uuid)</code></td>
     <td>The handle of the statement that you want to use (e.g. to fetch the result set or cancel execution).</td>
 </tr>
@@ -225,7 +225,7 @@ statementHandle,
 statementStatusUrl,
 stats
 FROM snowflake.sqlapi.statements
-WHERE statementHandle = '{{ statementHandle }}' -- required
+WHERE statement_handle = '{{ statement_handle }}' -- required
 AND "User-Agent" = '{{ User-Agent }}' -- required
 AND endpoint = '{{ endpoint }}' -- required
 AND requestId = '{{ requestId }}'
@@ -391,7 +391,7 @@ Cancels the execution of the statement with the specified statement handle.
 
 ```sql
 DELETE FROM snowflake.sqlapi.statements
-WHERE statementHandle = '{{ statementHandle }}' --required
+WHERE statement_handle = '{{ statement_handle }}' --required
 AND "User-Agent" = '{{ User-Agent }}' --required
 AND endpoint = '{{ endpoint }}' --required
 AND requestId = '{{ requestId }}'

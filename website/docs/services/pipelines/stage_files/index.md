@@ -101,7 +101,7 @@ The following methods are available for this resource:
 <tr>
     <td><a href="#presigned_url"><CopyableCode code="presigned_url" /></a></td>
     <td><CopyableCode code="exec" /></td>
-    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-filePath"><code>filePath</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
+    <td><a href="#parameter-database_name"><code>database_name</code></a>, <a href="#parameter-schema_name"><code>schema_name</code></a>, <a href="#parameter-name"><code>name</code></a>, <a href="#parameter-file_path"><code>file_path</code></a>, <a href="#parameter-endpoint"><code>endpoint</code></a></td>
     <td></td>
     <td>Generate a presigned url and optionally encryption materials for uploading and downloading files.</td>
 </tr>
@@ -131,8 +131,8 @@ Parameters can be passed in the `WHERE` clause of a query. Check the [Methods](#
     <td><code>string</code></td>
     <td>Organization and account identifier (orgname-accountname) (default: orgname-accountname)</td>
 </tr>
-<tr id="parameter-filePath">
-    <td><CopyableCode code="filePath" /></td>
+<tr id="parameter-file_path">
+    <td><CopyableCode code="file_path" /></td>
     <td><code>string</code></td>
     <td>The full stage path of the file.</td>
 </tr>
@@ -201,7 +201,7 @@ EXEC snowflake.pipelines.stage_files.presigned_url
 @database_name='{{ database_name }}' --required, 
 @schema_name='{{ schema_name }}' --required, 
 @name='{{ name }}' --required, 
-@filePath='{{ filePath }}' --required, 
+@file_path='{{ file_path }}' --required, 
 @endpoint='{{ endpoint }}' --required 
 @@json=
 '{
