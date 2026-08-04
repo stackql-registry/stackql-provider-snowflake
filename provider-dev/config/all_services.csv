@@ -75,7 +75,7 @@ cortex.yaml,/api/v2/databases/{database_name}/schemas/{schema_name}/cortex-searc
 cortex.yaml,/api/v2/databases/{database_name}/schemas/{schema_name}/cortex-search-services/{service_name}:suggest,suggestCortexSearchService,suggest_cortex_search_service,post,SuggestQueryResponse,cortex-search-service,cortex_search_service,cortex_search_services,suggest,exec,,Suggest from a Cortex Search Service
 cortex.yaml,/api/v2/databases/{database_name}/schemas/{schema_name}/cortex-search-services/{name}:suspend,suspendCortexSearchService,suspend_cortex_search_service,post,,cortex-search-service,cortex_search_service,cortex_search_services,suspend,exec,,Suspend a cortex search service.
 cortex.yaml,/api/v2/databases/{database_name}/schemas/{schema_name}/cortex-search-services/{name}:resume,resumeCortexSearchService,resume_cortex_search_service,post,,cortex-search-service,cortex_search_service,cortex_search_services,resume,exec,,Resume the cortex search service
-cortex.yaml,/api/v2/databases/{database_name}/schemas/{schema_name}/cortex-search-services/{name}:feedback,sendFeedback,send_feedback,post,,cortex-search-service,cortex_search_service,cortex_search_services,feedback,exec,,Send user feedback for a Cortex Search result
+cortex.yaml,/api/v2/databases/{database_name}/schemas/{schema_name}/cortex-search-services/{name}:feedback,sendCortexSearchServiceFeedback,send_cortex_search_service_feedback,post,,cortex-search-service,cortex_search_service,cortex_search_services,feedback,exec,,Send user feedback for a Cortex Search result
 databases.yaml,/api/v2/databases,listDatabases,list_databases,get,Database,database,database,databases,list,select,$.databases,List databases.
 databases.yaml,/api/v2/databases,createDatabase,create_database,post,,database,database,databases,create,insert,,Create a database.
 databases.yaml,/api/v2/databases:from-share,createDatabaseFromShare,create_database_from_share,post,,database,database,databases,from_share,exec,,Create a database from a share.
@@ -178,31 +178,31 @@ roles.yaml,/api/v2/databases/{database_name}/database-roles,listDatabaseRoles,li
 roles.yaml,/api/v2/databases/{database_name}/database-roles,createDatabaseRole,create_database_role,post,,database-role,database_role,database_roles,create,insert,,Create a database role
 roles.yaml,/api/v2/databases/{database_name}/database-roles/{name},deleteDatabaseRole,delete_database_role,delete,,database-role,database_role,database_roles,delete,delete,,Delete a database role
 roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}:clone,cloneDatabaseRole,clone_database_role,post,,database-role,database_role,database_roles,clone,exec,,Create a new database role by cloning from the specified resource
-roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/grants,listGrants,list_grants,get,Grant,database-role,database_role,database_role_grants,list,select,$.grants,List all grants to the role
-roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/grants,grantPrivileges,grant_privileges,post,,database-role,database_role,database_role_grants,grant,insert,,Grant privileges to the role
-roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/grants:revoke,revokeGrants,revoke_grants,post,,database-role,database_role,database_role_grants,revoke,exec,,Revoke grants from the role
-roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/future-grants,listFutureGrants,list_future_grants,get,Grant,database-role,database_role,database_role_future_grants,list,select,$.future_grants,List all future grants to the role
-roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/future-grants,grantFuturePrivileges,grant_future_privileges,post,,database-role,database_role,database_role_future_grants,grant,insert,,Grant future privileges to the role
-roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/future-grants:revoke,revokeFutureGrants,revoke_future_grants,post,,database-role,database_role,database_role_future_grants,revoke,exec,,Revoke future grants from the role
+roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/grants,listDatabaseRoleGrants,list_database_role_grants,get,Grant,database-role,database_role,database_role_grants,list,select,$.database_role_grants,List all grants to the role
+roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/grants,grantDatabaseRolePrivileges,grant_database_role_privileges,post,,database-role,database_role,database_role_grants,grant,insert,,Grant privileges to the role
+roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/grants:revoke,revokeDatabaseRoleGrants,revoke_database_role_grants,post,,database-role,database_role,database_role_grants,revoke,exec,,Revoke grants from the role
+roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/future-grants,listDatabaseRoleFutureGrants,list_database_role_future_grants,get,Grant,database-role,database_role,database_role_future_grants,list,select,$.database_role_future_grants,List all future grants to the role
+roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/future-grants,grantDatabaseRoleFuturePrivileges,grant_database_role_future_privileges,post,,database-role,database_role,database_role_future_grants,grant,insert,,Grant future privileges to the role
+roles.yaml,/api/v2/databases/{database_name}/database-roles/{name}/future-grants:revoke,revokeDatabaseRoleFutureGrants,revoke_database_role_future_grants,post,,database-role,database_role,database_role_future_grants,revoke,exec,,Revoke future grants from the role
 roles.yaml,/api/v2/roles,listRoles,list_roles,get,Role,role,role,roles,list,select,$.roles,List roles
 roles.yaml,/api/v2/roles,createRole,create_role,post,,role,role,roles,create,insert,,Create a role
 roles.yaml,/api/v2/roles/{name},deleteRole,delete_role,delete,,role,role,roles,delete,delete,,Delete a role
-roles.yaml,/api/v2/roles/{name}/grants,listGrants,list_grants,get,Grant,role,role,role_grants,list,select,$.grants,List all grants to the role
-roles.yaml,/api/v2/roles/{name}/grants,grantPrivileges,grant_privileges,post,,role,role,role_grants,grant,insert,,Grant privileges to the role
-roles.yaml,/api/v2/roles/{name}/grants:revoke,revokeGrants,revoke_grants,post,,role,role,role_grants,revoke,exec,,Revoke grants from the role
+roles.yaml,/api/v2/roles/{name}/grants,listRoleGrants,list_role_grants,get,Grant,role,role,role_grants,list,select,$.role_grants,List all grants to the role
+roles.yaml,/api/v2/roles/{name}/grants,grantRolePrivileges,grant_role_privileges,post,,role,role,role_grants,grant,insert,,Grant privileges to the role
+roles.yaml,/api/v2/roles/{name}/grants:revoke,revokeRoleGrants,revoke_role_grants,post,,role,role,role_grants,revoke,exec,,Revoke grants from the role
 roles.yaml,/api/v2/roles/{name}/grants-of,listGrantsOf,list_grants_of,get,GrantOf,role,role,role_grants_of,list,select,$.grants_of,List all grants of the role
 roles.yaml,/api/v2/roles/{name}/grants-on,listGrantsOn,list_grants_on,get,GrantOn,role,role,role_grants_on,list,select,$.grants_on,List all grants on the role
-roles.yaml,/api/v2/roles/{name}/future-grants,listFutureGrants,list_future_grants,get,Grant,role,role,role_future_grants,list,select,$.future_grants,List all future grants to the role
-roles.yaml,/api/v2/roles/{name}/future-grants,grantFuturePrivileges,grant_future_privileges,post,,role,role,role_future_grants,grant,insert,,Grant future privileges to the role
-roles.yaml,/api/v2/roles/{name}/future-grants:revoke,revokeFutureGrants,revoke_future_grants,post,,role,role,role_future_grants,revoke,exec,,Revoke future grants from the role
+roles.yaml,/api/v2/roles/{name}/future-grants,listRoleFutureGrants,list_role_future_grants,get,Grant,role,role,role_future_grants,list,select,$.role_future_grants,List all future grants to the role
+roles.yaml,/api/v2/roles/{name}/future-grants,grantRoleFuturePrivileges,grant_role_future_privileges,post,,role,role,role_future_grants,grant,insert,,Grant future privileges to the role
+roles.yaml,/api/v2/roles/{name}/future-grants:revoke,revokeRoleFutureGrants,revoke_role_future_grants,post,,role,role,role_future_grants,revoke,exec,,Revoke future grants from the role
 roles.yaml,/api/v2/users,createUser,create_user,post,,user,user,users,create,insert,,Create a user
 roles.yaml,/api/v2/users,listUsers,list_users,get,User,user,user,users,list,select,$.users,List users in the system.
 roles.yaml,/api/v2/users/{name},fetchUser,fetch_user,get,User,user,user,users,get,select,,Fetch information about a user
 roles.yaml,/api/v2/users/{name},deleteUser,delete_user,delete,,user,user,users,delete,delete,,Delete a user
 roles.yaml,/api/v2/users/{name},createOrAlterUser,create_or_alter_user,put,,user,user,users,create_or_alter,replace,,Create a (or alter an existing) user.
-roles.yaml,/api/v2/users/{name}/grants,listGrants,list_grants,get,Grant_user,user,user,user_grants,list,select,$.grants,List all grants to the user
-roles.yaml,/api/v2/users/{name}/grants,grant,grant,post,,user,user,user_grants,grant,insert,,Grant a role to the user
-roles.yaml,/api/v2/users/{name}/grants:revoke,revokeGrants,revoke_grants,post,,user,user,user_grants,revoke,exec,,Revoke grants from the user
+roles.yaml,/api/v2/users/{name}/grants,listUserGrants,list_user_grants,get,Grant_user,user,user,user_grants,list,select,$.user_grants,List all grants to the user
+roles.yaml,/api/v2/users/{name}/grants,grantUserPrivileges,grant_user_privileges,post,,user,user,user_grants,grant,insert,,Grant a role to the user
+roles.yaml,/api/v2/users/{name}/grants:revoke,revokeUserGrants,revoke_user_grants,post,,user,user,user_grants,revoke,exec,,Revoke grants from the user
 security.yaml,/api/v2/network-policies,listNetworkPolicies,list_network_policies,get,NetworkPolicy,network-policy,network_policy,network_policies,list,select,$.network_policies,List network policies
 security.yaml,/api/v2/network-policies,createNetworkPolicy,create_network_policy,post,,network-policy,network_policy,network_policies,create,insert,,Create a network policy
 security.yaml,/api/v2/network-policies/{name},fetchNetworkPolicy,fetch_network_policy,get,NetworkPolicy,network-policy,network_policy,network_policies,get,select,,Fetch a network policy
