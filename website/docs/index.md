@@ -91,7 +91,11 @@ stackql.exe shell --auth=$Auth
 ```
 </details>
 
-## Database inventory
+## Example Queries
+
+Try the following queries using `stackql shell`, or run them from a script or CI pipeline with `stackql exec`.
+
+### Database inventory
 
 All databases in the account, with ownership and retention settings:
 
@@ -107,7 +111,7 @@ WHERE endpoint = 'myorg-myaccount'
 ORDER BY name;
 ```
 
-## Grant audit
+### Grant audit
 
 Grants are REST resources - granting is an `INSERT`, revoking is a `DELETE`, and auditing is a `SELECT`. Every grant held by a role, straight from the account:
 
@@ -126,7 +130,7 @@ AND endpoint = 'myorg-myaccount';
 
 Repeat per grantee (`role`, `user`, `database-role`, `application-role`, `share`) to audit the whole account - no state file to drift, nothing to reconcile.
 
-## Declarative warehouse definition
+### Declarative warehouse definition
 
 `REPLACE` maps to Snowflake's `CREATE OR ALTER` semantics - the statement below creates the warehouse if it does not exist, or alters it to match if it does. Idempotent and re-runnable, no state required:
 
@@ -141,7 +145,7 @@ WHERE warehouse_name = 'REPORTING_WH'
 AND endpoint = 'myorg-myaccount';
 ```
 
-## Cortex AI inference
+### Cortex AI inference
 
 Cortex inference is a `SELECT` - `WHERE` members feed the request body, and the completion projects as columns. The OpenAI-compatible and Anthropic-compatible endpoints are both available:
 
@@ -158,7 +162,7 @@ AND endpoint = 'myorg-myaccount';
 
 > Streaming (SSE) responses are out of scope; completions return in JSON mode. Model availability varies by account and region.
 
-## Data plane: submit a statement
+### Data plane: submit a statement
 
 Statement submission is an `INSERT` with a `RETURNING` clause - inventory the control plane and query the data inside it in the same session:
 
