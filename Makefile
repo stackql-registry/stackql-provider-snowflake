@@ -12,6 +12,7 @@ SHELL := bash
 .DEFAULT_GOAL := help
 
 PROVIDER := snowflake
+SOURCE_PROJECT ?= https://github.com/stackql-registry/stackql-provider-$(PROVIDER)
 SERVICES_DIR := provider-dev/openapi/src/$(PROVIDER)
 SERVERS := [{"url": "https://{endpoint}.snowflakecomputing.com", "variables": {"endpoint": {"default": "orgname-accountname", "description": "Organization and account identifier (orgname-accountname)"}}}]
 PROVIDER_CONFIG := {"auth": {"type": "bearer", "credentialsenvvar": "SNOWFLAKE_PAT"}, "snake_case_aliases": true}
@@ -89,7 +90,8 @@ docs: ## generate the website docs from the generated provider
 	  --provider-name $(PROVIDER) \
 	  --provider-dir ./$(SERVICES_DIR)/v00.00.00000 \
 	  --output-dir ./website \
-	  --provider-data-dir ./provider-dev/docgen/provider-data
+	  --provider-data-dir ./provider-dev/docgen/provider-data \
+	  --source-project $(SOURCE_PROJECT)
 	node provider-dev/docgen/sanitize_docs.mjs
 
 website: ## build the docusaurus microsite (vendors shared config first)
