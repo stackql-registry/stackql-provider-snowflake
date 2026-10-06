@@ -23,6 +23,7 @@ Cloud data platform - query and provision Snowflake control plane resources (dat
 
 total services: __13__  
 total resources: __88__  
+source project: __[stackql-provider-snowflake](https://github.com/stackql-registry/stackql-provider-snowflake)__  
 
 :::
 
